@@ -1,24 +1,28 @@
-#include <ctype.h>
+#include "9cc.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-// トークンの型を表す値
-enum {
-    TK_NUM = 256,   // 整数トークン
-    TK_EOF,         // 入力の終わりを表すトークン
-};
-
-// トークンの型
-typedef struct {
-    int ty;         // トークンの型
-    int val;        // tyがTK_NUMの場合，その数値
-    char *input;    // トークン文字列（エラーメッセージ用）
-} Token;
+int pos = 0;
 
 // トークナイズした結果のトークン列を収納する配列
 // 暫定的に最大トークン数は100個しておく
 Token tokens[1000];
+
+Vector *new_vector(){
+    Vector *vec = malloc(sizeof(Vector));
+    vec->data = malloc(sizeof(void *) * 16);
+    vec->capacity = 16;
+    vec->len = 0;
+    return vec;
+}
+
+void vec_push(Vector *vec, void *elem){
+    if (vec->capacity == vec->len){
+        vec->capacity *= 2;
+        vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+    }
+    vec->data[vec->len++] = elem;
+}
 
 // pが指している文字列をトークンに分割してtokensに保存する
 void tokenize(char *p) {
@@ -54,22 +58,28 @@ void tokenize(char *p) {
     tokens[i].input = p;
 }
 
-// エラーを報告するための関数
-//void error(const char *s){
-//    fprintf(stderr, s);
-//    exit(1);
-//}
+int expect(int line, int expected, int actual){
+    if (expected == actual)
+        return 1;
+    fprintf(stderr, "%d: %d expected, but got %d\n", line, expected, actual);
+    exit(1);
+    return 0;
+}
 
-enum {
-    ND_NUM = 256,
-};
+void runtest(){
+    Vector *vec = new_vector();
+    expect(__LINE__, 0, vec->len);
 
-typedef struct Node {
-    int ty;             // type -- operator or ND_NUM
-    struct Node *lhs;   // left-hand side
-    struct Node *rhs;   // right-hand side
-    int val;            // used only when ty is ND_NUM
-} Node;
+    for (int i = 0; i <100; i++)
+        vec_push(vec, (void *)i);
+
+    expect(__LINE__, 100, vec->len);
+    expect(__LINE__, 0,   (int)vec->data[0]);
+    expect(__LINE__, 50,  (int)vec->data[50]);
+    expect(__LINE__, 99,  (int)vec->data[99]);
+
+    printf("OK\n");
+}
 
 Node *new_node(int ty, Node *lhs, Node *rhs){
     Node *node = malloc(sizeof(Node));
@@ -86,18 +96,12 @@ Node *new_node_num(int val){
     return node;
 }
 
-int pos = 0;
-
 int consume(int ty){
     if (tokens[pos].ty != ty)
         return 0;
     pos++;
     return 1;
 }
-
-Node *add();
-Node *mul();
-Node *term();
 
 Node *add(){
     Node *node = mul();
@@ -129,7 +133,6 @@ Node *term(){
     if (consume('(')){
         Node *node = add();
         if (!consume(')')){
-            //error("開き括弧に対応する閉じ括弧がない: %s", tokens[pos].input);
             fprintf(stderr,"開き括弧に対応する閉じ括弧がない: %s", tokens[pos].input);
             exit(1);
         }
@@ -139,7 +142,8 @@ Node *term(){
     if (tokens[pos].ty == TK_NUM)
         return new_node_num(tokens[pos++].val);
 
-    //error("数値でも開き括弧でもないトークンです: %s", tokens[pos].input);
+    fprintf(stderr,"数値でも開き括弧でもないトークンです: %s", tokens[pos].input);
+    exit(1);
 }
 
 void gen(Node *node){
@@ -178,20 +182,24 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    // トークナイズする
-    tokenize(argv[1]);
-    Node *node = add();
+    if (strcmp(argv[1] ,"-test") == 0)
+        runtest();
+    else{
+        // トークナイズする
+        tokenize(argv[1]);
+        Node *node = add();
 
-    // アセンブリの前半部分を出力する
-    printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
-    printf("main:\n");
+        // アセンブリの前半部分を出力する
+        printf(".intel_syntax noprefix\n");
+        printf(".global main\n");
+        printf("main:\n");
 
-    // decent the tree and generate a code
-    gen(node);
+        // decent the tree and generate a code
+        gen(node);
 
-    // We have the result at the top of the stack
-    printf("    pop rax\n");
-    printf("    ret\n");
+        // We have the result at the top of the stack
+        printf("    pop rax\n");
+        printf("    ret\n");
+    }
     return 0;
 }
