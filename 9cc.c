@@ -3,10 +3,7 @@
 #include <stdlib.h>
 
 int pos = 0;
-
-// トークナイズした結果のトークン列を収納する配列
-// 暫定的に最大トークン数は100個しておく
-Token tokens[1000];
+Vector *tokens;
 
 Vector *new_vector(){
     Vector *vec = malloc(sizeof(Vector));
@@ -24,8 +21,18 @@ void vec_push(Vector *vec, void *elem){
     vec->data[vec->len++] = elem;
 }
 
+Token *add_token(Vector *tokens, int ty, char *input){
+    Token *token = malloc(sizeof(Token));
+    token->ty = ty;
+    token->val = input;
+    vec_push(tokens,token);
+    return token;
+}
+
 // pが指している文字列をトークンに分割してtokensに保存する
-void tokenize(char *p) {
+Vector *tokenizer(char *p) {
+    Vector *vec = new_vector();
+    Token *token = malloc(sizeof(Token));
     int i = 0;
     while(*p){
         // 空白文字をスキップ
@@ -35,27 +42,22 @@ void tokenize(char *p) {
         }
 
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' ){
-            tokens[i].ty = *p;
-            tokens[i].input = p;
-            i++;
+            add_token(vec, *p, p);
             p++;
             continue;
         }
 
         if (isdigit(*p)){
-            tokens[i].ty = TK_NUM;
-            tokens[i].input = p;
-            tokens[i].val = strtol(p, &p, 10);
-            i++;
+            token = add_token(vec, TK_NUM, p);
+            token->val = strtol(p, &p, 10);
             continue;
         }
 
         fprintf(stderr, "トークナイズ出来ません : %s\n", p);
         exit(1);
     }
-
-    tokens[i].ty = TK_EOF;
-    tokens[i].input = p;
+    add_token(vec, TK_EOF, p);
+    return vec;
 }
 
 int expect(int line, int expected, int actual){
@@ -97,7 +99,8 @@ Node *new_node_num(int val){
 }
 
 int consume(int ty){
-    if (tokens[pos].ty != ty)
+    Token *token = (Token *)(tokens->data[pos]);
+    if (token->ty != ty)
         return 0;
     pos++;
     return 1;
@@ -130,19 +133,21 @@ Node *mul(){
 }
     
 Node *term(){
+    Token *token = (Token *)(tokens->data[pos]);
+
     if (consume('(')){
         Node *node = add();
         if (!consume(')')){
-            fprintf(stderr,"開き括弧に対応する閉じ括弧がない: %s", tokens[pos].input);
+            fprintf(stderr,"開き括弧に対応する閉じ括弧がない: %s", token->input);
             exit(1);
         }
         return node;
     }
 
-    if (tokens[pos].ty == TK_NUM)
-        return new_node_num(tokens[pos++].val);
+    if (consume(TK_NUM))
+        return new_node_num(token->val);
 
-    fprintf(stderr,"数値でも開き括弧でもないトークンです: %s", tokens[pos].input);
+    fprintf(stderr,"数値でも開き括弧でもないトークンです: %s", token->input);
     exit(1);
 }
 
@@ -186,7 +191,7 @@ int main(int argc, char **argv){
         runtest();
     else{
         // トークナイズする
-        tokenize(argv[1]);
+        tokens = tokenizer(argv[1]);
         Node *node = add();
 
         // アセンブリの前半部分を出力する

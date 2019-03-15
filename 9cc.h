@@ -34,7 +34,8 @@ typedef struct Node {
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
-void tokenize(char *p) ;
+Token *add_token(Vector *tokens, int ty, char *input);
+Vector *tokenizer(char *p) ;
 int expect(int line, int expected, int actual);
 void runtest();
 Node *new_node(int ty, Node *lhs, Node *rhs);
