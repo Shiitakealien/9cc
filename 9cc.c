@@ -24,7 +24,7 @@ void vec_push(Vector *vec, void *elem){
 Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
-    token->val = input;
+    token->input = input;
     vec_push(tokens,token);
     return token;
 }
@@ -71,14 +71,16 @@ int expect(int line, int expected, int actual){
 void runtest(){
     Vector *vec = new_vector();
     expect(__LINE__, 0, vec->len);
-
-    for (int i = 0; i <100; i++)
-        vec_push(vec, (void *)i);
+    int test[100];
+    for (int i = 0; i <100; i++){
+        test[i] = i;
+        vec_push(vec, (void *)&test[i]);
+    }
 
     expect(__LINE__, 100, vec->len);
-    expect(__LINE__, 0,   (int)vec->data[0]);
-    expect(__LINE__, 50,  (int)vec->data[50]);
-    expect(__LINE__, 99,  (int)vec->data[99]);
+    expect(__LINE__, 0,   *(int *)(vec->data[0]));
+    expect(__LINE__, 50,  *(int *)(vec->data[50]));
+    expect(__LINE__, 99,  *(int *)(vec->data[99]));
 
     printf("OK\n");
 }
