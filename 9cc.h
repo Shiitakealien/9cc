@@ -34,7 +34,7 @@ typedef struct Node {
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
     int val;            // used only when ty is ND_NUM
-    char name;          // used only when ty is ND_IDENT
+    char *name;          // used only when ty is ND_IDENT
 } Node;
 
 // associative array 

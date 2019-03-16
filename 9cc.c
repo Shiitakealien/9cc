@@ -4,6 +4,7 @@
 
 int pos = 0;
 Vector *tokens;
+Map *vars;
 
 Vector *new_vector(){
     Vector *vec = malloc(sizeof(Vector));
@@ -40,6 +41,11 @@ void *map_get(Map *map, char *key){
     return NULL;
 }
     
+void add_var(Map *map, char *name){
+    if (map_get(map, name) == NULL)
+        map_put(map, name, (void *)(map->keys->len));
+}
+
 Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
@@ -48,30 +54,46 @@ Token *add_token(Vector *tokens, int ty, char *input){
     return token;
 }
 
-// pが指している文字列をトークンに分割してtokensに保存する
+char *add_token_var(Vector *tokens, char *p){
+    char *varname = malloc(sizeof(char) * 256);
+    int i = 0;
+    while (('a' <= *p && *p <= 'z') || isdigit(*p))
+        *(varname+i++) = *p++;
+    *(varname+i) = '\0';
+    add_var(vars, varname);
+    add_token(tokens, TK_IDENT, varname);
+    return p;
+}
+
+int isoperator(char *p){
+    if (*p == '+' || *p == '-' || 
+        *p == '*' || *p == '/' || 
+        *p == '(' || *p == ')' ||
+        *p == '=' || *p == ';' )
+        return 1;
+    return 0;
+}
+
+// separate a string pointed by 'p' and save in 'tokens'
 Vector *tokenizer(char *p) {
     Vector *vec = new_vector();
     Token *token = malloc(sizeof(Token));
     int i = 0;
     while(*p){
-        // 空白文字をスキップ
+        // skip blanc
         if (isspace(*p)){
             p++;
             continue;
         }
 
-        if (*p == '+' || *p == '-' || 
-            *p == '*' || *p == '/' || 
-            *p == '(' || *p == ')' ||
-            *p == '=' || *p == ';' ){
+        if (isoperator(p)){
             add_token(vec, *p, p);
             p++;
             continue;
         }
 
         if ('a' <= *p && *p <= 'z'){
-            add_token(vec, TK_IDENT, p);
-            p++;
+            p = add_token_var(vec, p);
             continue;
         }
 
@@ -91,7 +113,8 @@ Vector *tokenizer(char *p) {
 int expect(int line, int expected, int actual){
     if (expected == actual)
         return 1;
-    fprintf(stderr, "%d: %d expected, but got %d\n", line, expected, actual);
+    fprintf(stderr, "%d: %d expected, but got %d\n",
+                    line, expected, actual);
     exit(1);
     return 0;
 }
@@ -118,7 +141,6 @@ void test_map() {
     printf("test map\n");
     int test_data[] = {2,4,6};
     Map *map = new_map();
-    expect(__LINE__, 0, (int)map_get(map, "foo"));
 
     map_put(map, "foo", (void *)&test_data[0]);
     expect(__LINE__, 2, *(int *)map_get(map, "foo"));
@@ -155,7 +177,7 @@ Node *new_node_num(int val){
 Node *new_node_ident(char *input){
     Node *node = malloc(sizeof(Node));
     node->ty = ND_IDENT;
-    node->name = *input;
+    node->name = input;
     return node;
 }
 
@@ -229,7 +251,8 @@ Node *term(){
     if (consume('(')){
         Node *node = add();
         if (!consume(')')){
-            fprintf(stderr,"開き括弧に対応する閉じ括弧がない: %s", token->input);
+            fprintf(stderr,"'(' without ')': %s", 
+                    token->input);
             exit(1);
         }
         return node;
@@ -241,7 +264,7 @@ Node *term(){
     if (consume(TK_IDENT))
         return new_node_ident(token->input);
 
-    fprintf(stderr,"数値でも開き括弧でもないトークンです: %s", token->input);
+    fprintf(stderr,"found an unknown token: %s", token->input);
     exit(1);
 }
 
@@ -251,7 +274,7 @@ void gen_lval(Node *node){
         exit(1);
     }
 
-    int offset = ('z' - node->name + 1) * 8;
+    int offset = (int)map_get(vars, node->name) * 8;
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", offset);
     printf("    push rax\n");
@@ -315,7 +338,8 @@ int main(int argc, char **argv){
     if (strcmp(argv[1] ,"-test") == 0)
         runtest();
     else{
-        // トークナイズする
+        vars = new_map();
+        // tokenize
         tokens = tokenizer(argv[1]);
         program();
 
@@ -327,7 +351,7 @@ int main(int argc, char **argv){
         // prologue
         printf("    push rbp\n");
         printf("    mov rbp, rsp\n");
-        printf("    sub rsp, 208\n");
+        printf("    sub rsp, %d\n", vars->keys->len*8);
 
         // generate a code from the head
         for (int i = 0; code[i]; i++){

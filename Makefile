@@ -1,4 +1,4 @@
-9cc: 9cc.c 9cc.h
+9cc: 9cc.c
 
 test: 9cc
 	./9cc -test
