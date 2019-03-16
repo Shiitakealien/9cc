@@ -1,14 +1,14 @@
 #include <ctype.h>
 #include <string.h>
 
-// トークンの型を表す値
+// indicating the type of a token
 enum {
     TK_NUM = 256,   // 整数トークン
     TK_IDENT,       // identifier
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
-// トークンの型
+// Token Type
 typedef struct {
     int ty;         // トークンの型
     int val;        // tyがTK_NUMの場合，その数値
@@ -22,11 +22,13 @@ typedef struct {
     int len;
 } Vector;
 
+// indicating the type of a node
 enum {
     ND_NUM = 256,       // Node type of integer
     ND_IDENT,           // Node type of identifer
 };
 
+// Node Type
 typedef struct Node {
     int ty;             // type -- operator or ND_NUM
     struct Node *lhs;   // left-hand side
@@ -34,6 +36,12 @@ typedef struct Node {
     int val;            // used only when ty is ND_NUM
     char name;          // used only when ty is ND_IDENT
 } Node;
+
+// associative array 
+typedef struct {
+    Vector *keys;
+    Vector *vals;
+} Map;
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
