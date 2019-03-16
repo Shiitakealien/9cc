@@ -4,6 +4,7 @@
 // トークンの型を表す値
 enum {
     TK_NUM = 256,   // 整数トークン
+    TK_IDENT,       // identifier
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -22,7 +23,8 @@ typedef struct {
 } Vector;
 
 enum {
-    ND_NUM = 256,
+    ND_NUM = 256,       // Node type of integer
+    ND_IDENT,           // Node type of identifer
 };
 
 typedef struct Node {
@@ -30,6 +32,7 @@ typedef struct Node {
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
     int val;            // used only when ty is ND_NUM
+    char name;          // used only when ty is ND_IDENT
 } Node;
 
 Vector *new_vector();
@@ -40,7 +43,11 @@ int expect(int line, int expected, int actual);
 void runtest();
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+Node *new_node_ident(char *input);
 int consume(int ty);
+void program();
+Node *stmt();
+Node *assign();
 Node *add();
 Node *mul();
 Node *term();
