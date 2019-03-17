@@ -49,8 +49,16 @@ Vector *tokenizer(char *p) {
         }
 
         if (isoperator(p)){
+            if (*p == '=' && *p+1 == '='){
+                add_token(vec, TK_EQ, p);
+                p+=2;
+            } else if (*p == '!' && *p+1 == '=') {
+                add_token(vec, TK_EQN, p);
+                p+=2;
+            } else {
             add_token(vec, *p, p);
             p++;
+            }
             continue;
         }
 

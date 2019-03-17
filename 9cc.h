@@ -2,6 +2,8 @@
 enum {
     TK_NUM = 256,   // integer token
     TK_IDENT,       // identifier token
+    TK_EQ,          // ==
+    TK_EQN,         // !=
     TK_EOF,         // End Of File token
 };
 

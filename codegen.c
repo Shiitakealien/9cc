@@ -32,8 +32,6 @@ int consume(int ty){
     return 1;
 }
 
-Node *code[100];
-
 void program(){
     int i = 0;
     while (((Token *)(tokens->data[pos]))->ty != TK_EOF)
