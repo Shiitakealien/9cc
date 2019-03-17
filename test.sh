@@ -43,5 +43,7 @@ try 1 "a=2;b=3;b==a+1;"
 try 1 "a=2;b=4;b==a*2;"
 try 0 "a=2;b=2;a!=b;"
 try 1 "a=2;b=3;a!=b;"
-try 1 "foo();"
+try 3 "bar();foo();"
+try 2 "foo();bar();"
+try 5 "a=foo();b=bar();a+b;"
 echo OK

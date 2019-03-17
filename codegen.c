@@ -159,7 +159,9 @@ void gen(Node *node){
     }
 
     if (node->ty == ND_FUNC){
+        printf("    mov rax, 0\n");
         printf("    call %s\n", node->name);
+        printf("    push rax\n");
         return;
     }
 
