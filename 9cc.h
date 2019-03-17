@@ -1,6 +1,3 @@
-#include <ctype.h>
-#include <string.h>
-
 // indicating the type of a token
 enum {
     TK_NUM = 256,   // 整数トークン
@@ -43,11 +40,24 @@ typedef struct {
     Vector *vals;
 } Map;
 
+extern int pos;
+extern Vector *tokens;
+extern Map *vars;
+extern Node *code[100];
+
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
+Map *new_map();
+void map_put(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
+void add_var(Map *map, char *name);
 Token *add_token(Vector *tokens, int ty, char *input);
-Vector *tokenizer(char *p) ;
+char *add_token_var(Vector *tokens, char *p);
+int isoperator(char *p);
+Vector *tokenizer(char *p);
 int expect(int line, int expected, int actual);
+void test_vector();
+void test_map() ;
 void runtest();
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
@@ -59,4 +69,7 @@ Node *assign();
 Node *add();
 Node *mul();
 Node *term();
+void gen_lval(Node *node);
 void gen(Node *node);
+
+
