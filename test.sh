@@ -4,7 +4,8 @@ try(){
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -o tmp tmp.s
+    gcc -c tmp.s
+    gcc -o tmp tmp.o func_define.o
     ./tmp
     actual="$?"
 
@@ -34,6 +35,13 @@ try 0 "2!=2;"
 try 1 "2!=3;"
 try 1 "a=2;b=2;a==b;"
 try 0 "a=2;b=3;a==b;"
+try 1 "a=2;b=3;a+1==b;"
+try 1 "a=2;b=4;a*2==b;"
+try 0 "a=2;b=3;a+1!=b;"
+try 0 "a=2;b=4;a*2!=b;"
+try 1 "a=2;b=3;b==a+1;"
+try 1 "a=2;b=4;b==a*2;"
 try 0 "a=2;b=2;a!=b;"
 try 1 "a=2;b=3;a!=b;"
+try 1 "foo();"
 echo OK

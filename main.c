@@ -5,11 +5,12 @@
 int pos = 0;
 Vector *tokens;
 Map *vars;
+Map *funcs;
 Node *code[100];
 
 int main(int argc, char **argv){
     if (argc != 2){
-        fprintf(stderr, "引数の数が不正です\n");
+        fprintf(stderr, "usage: ./9cc [code]\n");
         return 1;
     }
 
@@ -17,6 +18,7 @@ int main(int argc, char **argv){
         runtest();
     else{
         vars = new_map();
+        funcs = new_map();
         // tokenize
         tokens = tokenizer(argv[1]);
         program();

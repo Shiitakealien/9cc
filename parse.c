@@ -8,6 +8,11 @@ void add_var(Map *map, char *name){
         map_put(map, name, (void *)(map->keys->len));
 }
 
+void add_func(Map *map, char *name){
+    if (map_get(map, name) == NULL)
+        map_put(map, name, (void *)(map->keys->len));
+}
+
 Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
@@ -16,15 +21,24 @@ Token *add_token(Vector *tokens, int ty, char *input){
     return token;
 }
 
-char *add_token_var(Vector *tokens, char *p){
-    char *varname = malloc(sizeof(char) * 256);
+char *add_token_func_var(Vector *tokens, char *p){
+    char *name = malloc(sizeof(char) * 256);
     int i = 0;
     while (('a' <= *p && *p <= 'z') || 
            ('A' <= *p && *p <= 'Z' ) || isdigit(*p))
-        *(varname+i++) = *p++;
-    *(varname+i) = '\0';
-    add_var(vars, varname);
-    add_token(tokens, TK_IDENT, varname);
+        *(name+i++) = *p++;
+    if (*p == '('){
+        *(name+i) = '\0';
+        add_func(funcs, name);
+        add_token(tokens, TK_FUNC, name);
+        while (*p != ')')
+            p++;
+        p++;
+    } else {
+        *(name+i) = '\0';
+        add_var(vars, name);
+        add_token(tokens, TK_IDENT, name);
+    }
     return p;
 }
 
@@ -64,7 +78,7 @@ Vector *tokenizer(char *p) {
 
         if (('a' <= *p && *p <= 'z') || 
             ('A' <= *p && *p <= 'Z')){
-            p = add_token_var(vec, p);
+            p = add_token_func_var(vec, p);
             continue;
         }
 

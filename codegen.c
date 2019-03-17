@@ -24,6 +24,13 @@ Node *new_node_ident(char *input){
     return node;
 }
 
+Node *new_node_func(char *input){
+    Node *node = malloc(sizeof(Node));
+    node->ty = ND_FUNC;
+    node->name = input;
+    return node;
+}
+
 int consume(int ty){
     Token *token = (Token *)(tokens->data[pos]);
     if (token->ty != ty)
@@ -118,6 +125,9 @@ Node *term(){
     if (consume(TK_IDENT))
         return new_node_ident(token->input);
 
+    if (consume(TK_FUNC))
+        return new_node_func(token->input);
+
     fprintf(stderr,"found an unknown token: %s", token->input);
     exit(1);
 }
@@ -145,6 +155,11 @@ void gen(Node *node){
         printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
+        return;
+    }
+
+    if (node->ty == ND_FUNC){
+        printf("    call %s\n", node->name);
         return;
     }
 
