@@ -25,6 +25,8 @@ typedef struct {
 enum {
     ND_NUM = 256,       // Node type of integer
     ND_IDENT,           // Node type of identifer
+    ND_EQ,              // Node type of ==
+    ND_EQN,             // Node type of !=
 };
 
 // Node Type
@@ -68,6 +70,7 @@ int consume(int ty);
 void program();
 Node *stmt();
 Node *assign();
+Node *eq();
 Node *add();
 Node *mul();
 Node *term();

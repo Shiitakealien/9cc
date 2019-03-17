@@ -50,11 +50,24 @@ Node *stmt(){
 }        
 
 Node *assign(){
-    Node *node = add();
+    Node *node = eq();
     
     for (;;){
         if (consume('='))
             node = new_node('=', node, assign());
+        else
+            return node;
+    }
+}
+
+Node *eq(){
+    Node *node = add();
+
+    for (;;){
+        if (consume(TK_EQ))
+            node = new_node(ND_EQ, node, add());
+        else if (consume(TK_EQN))
+            node = new_node(ND_EQN, node, add());
         else
             return node;
     }
@@ -153,6 +166,16 @@ void gen(Node *node){
     printf("    pop rax\n");
 
     switch (node->ty){
+        case ND_EQ:
+            printf("    cmp rdi, rax\n");
+            printf("    sete al\n");
+            printf("    movzb rax, al\n");
+            break;
+        case ND_EQN:
+            printf("    cmp rdi, rax\n");
+            printf("    setne al\n");
+            printf("    movzb rax, al\n");
+            break;
         case '+':
             printf("    add rax, rdi\n");
             break;
