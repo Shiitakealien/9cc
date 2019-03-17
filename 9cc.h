@@ -1,20 +1,20 @@
 // indicating the type of a token
 enum {
-    TK_NUM = 256,   // 整数トークン
-    TK_IDENT,       // identifier
-    TK_EOF,         // 入力の終わりを表すトークン
+    TK_NUM = 256,   // integer token
+    TK_IDENT,       // identifier token
+    TK_EOF,         // End Of File token
 };
 
 // Token Type
 typedef struct {
-    int ty;         // トークンの型
-    int val;        // tyがTK_NUMの場合，その数値
-    char *input;    // トークン文字列（エラーメッセージ用）
+    int ty;         // Token's type
+    int val;        // Token's value, used when ty is TK_NUM
+    char *input;    // Token's string
 } Token;
 
 // variable length array
 typedef struct {
-    void **data; // data body
+    void **data;        // data body
     int capacity; 
     int len;
 } Vector;
@@ -31,7 +31,7 @@ typedef struct Node {
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
     int val;            // used only when ty is ND_NUM
-    char *name;          // used only when ty is ND_IDENT
+    char *name;         // used only when ty is ND_IDENT
 } Node;
 
 // associative array 

@@ -27,4 +27,5 @@ try 6 "a=3;b=2;c=1;a+b+c;"
 try 6 "a=b=c=2;a+b+c;"
 try 6 "a1=b=c=2;a1+b+c;"
 try 6 "a1bbb=b=c=2;a1bbb+b+c;"
+try 27 "A1bbb=b=c=9;A1bbb+b+c;"
 echo OK

@@ -19,7 +19,8 @@ Token *add_token(Vector *tokens, int ty, char *input){
 char *add_token_var(Vector *tokens, char *p){
     char *varname = malloc(sizeof(char) * 256);
     int i = 0;
-    while (('a' <= *p && *p <= 'z') || isdigit(*p))
+    while (('a' <= *p && *p <= 'z') || 
+           ('A' <= *p && *p <= 'Z' ) || isdigit(*p))
         *(varname+i++) = *p++;
     *(varname+i) = '\0';
     add_var(vars, varname);
@@ -31,7 +32,7 @@ int isoperator(char *p){
     if (*p == '+' || *p == '-' || 
         *p == '*' || *p == '/' || 
         *p == '(' || *p == ')' ||
-        *p == '=' || *p == ';' )
+        *p == '=' || *p == ';' || *p == '!')
         return 1;
     return 0;
 }
@@ -53,7 +54,8 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if ('a' <= *p && *p <= 'z'){
+        if (('a' <= *p && *p <= 'z') || 
+            ('A' <= *p && *p <= 'Z')){
             p = add_token_var(vec, p);
             continue;
         }
@@ -64,7 +66,7 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        fprintf(stderr, "トークナイズ出来ません : %s\n", p);
+        fprintf(stderr, "cannot tokenize : %s\n", p);
         exit(1);
     }
     add_token(vec, TK_EOF, p);
