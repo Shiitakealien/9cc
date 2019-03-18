@@ -55,7 +55,7 @@ static Node *stmt(){
     Token *token = (Token *)(tokens->data[pos]);
     Node *node = assign();
     if (!consume(';')){
-        fprintf(stderr,"';'ではないトークンです: %s", token->input);
+        fprintf(stderr,"token without ';': %s", token->input);
         exit(1);
     }
     return node;
@@ -130,14 +130,23 @@ static Node *term(){
     if (consume(TK_IDENT))
         if (!consume('('))
             return new_node_ident(token->input);
-        else if (consume(')'))
-            return new_node_call(token->input);
+        else {
+            Node *node = new_node_call(token->input);
+            node->args = new_vector();
+            if (!consume(')')) { // get arguments
+                do{
+                     vec_push(node->args, (void *)assign());
+                }while(consume(','));
+                consume(')');
+            }
+            return node;
+        }
 
     fprintf(stderr,"found an unknown token: %s", token->input);
     exit(1);
 }
 
-void gen_lval(Node *node){
+static void gen_lval(Node *node){
     if (node->ty != ND_IDENT){
         fprintf(stderr, "lhs is not a variable");
         exit(1);
@@ -164,7 +173,11 @@ void gen(Node *node){
     }
 
     if (node->ty == ND_CALL){
-        printf("    mov rax, 0\n");
+        char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
+        for (int i = node->args->len-1; i >= 0; i--){
+            gen((Node *)(node->args->data[i]));
+            printf("    pop %s\n",reg[i]);
+        }
         printf("    call %s\n", node->name);
         printf("    push rax\n");
         return;

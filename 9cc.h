@@ -42,6 +42,7 @@ typedef struct Node {
     struct Node *rhs;   // right-hand side
     int val;            // used only when ty is ND_NUM
     char *name;         // used only when ty is ND_IDENT
+    Vector *args;       // arguments for ND_CALL
 } Node;
 
 // associative array 
@@ -64,7 +65,6 @@ int isoperator(char *p);
 Vector *tokenizer(char *p);
 void runtest();
 void program();
-void gen_lval(Node *node);
 void gen(Node *node);
 
 
