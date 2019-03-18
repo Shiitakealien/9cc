@@ -1,7 +1,4 @@
 #include "9cc.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 Vector *new_vector(){
     Vector *vec = malloc(sizeof(Vector));
@@ -38,7 +35,7 @@ void *map_get(Map *map, char *key){
     return NULL;
 }
     
-int expect(int line, int expected, int actual){
+static int expect(int line, int expected, int actual){
     if (expected == actual)
         return 1;
     fprintf(stderr, "%d: %d expected, but got %d\n",
@@ -47,7 +44,7 @@ int expect(int line, int expected, int actual){
     return 0;
 }
 
-void test_vector(){
+static void test_vector(){
     printf("test vector\n");
     Vector *vec = new_vector();
     expect(__LINE__, 0, vec->len);
@@ -65,7 +62,7 @@ void test_vector(){
     printf("OK\n");
 }
 
-void test_map() {
+static void test_map() {
     printf("test map\n");
     int test_data[] = {2,4,6};
     Map *map = new_map();

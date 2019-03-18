@@ -1,11 +1,8 @@
 #include "9cc.h"
-#include <stdio.h>
-#include <string.h>
 
 int pos = 0;
 Vector *tokens;
-Map *vars;
-Map *funcs;
+Map *idents;
 Node *code[100];
 
 int main(int argc, char **argv){
@@ -17,8 +14,7 @@ int main(int argc, char **argv){
     if (strcmp(argv[1] ,"-test") == 0)
         runtest();
     else{
-        vars = new_map();
-        funcs = new_map();
+        idents = new_map();
         // tokenize
         tokens = tokenizer(argv[1]);
         program();
@@ -31,7 +27,7 @@ int main(int argc, char **argv){
         // prologue
         printf("    push rbp\n");
         printf("    mov rbp, rsp\n");
-        printf("    sub rsp, %d\n", vars->keys->len*8);
+        printf("    sub rsp, %d\n", idents->keys->len*8);
 
         // generate a code from the head
         for (int i = 0; code[i]; i++){

@@ -1,8 +1,13 @@
 #include "9cc.h"
-#include <stdio.h>
-#include <stdlib.h>
 
-Node *new_node(int ty, Node *lhs, Node *rhs){
+static Node *stmt();
+static Node *assign();
+static Node *eq();
+static Node *add();
+static Node *mul();
+static Node *term();
+
+static Node *new_node(int ty, Node *lhs, Node *rhs){
     Node *node = malloc(sizeof(Node));
     node->ty = ty;
     node->lhs = lhs;
@@ -10,28 +15,28 @@ Node *new_node(int ty, Node *lhs, Node *rhs){
     return node;
 }
 
-Node *new_node_num(int val){
+static Node *new_node_num(int val){
     Node *node = malloc(sizeof(Node));
     node->ty = ND_NUM;
     node->val = val;
     return node;
 }
 
-Node *new_node_ident(char *input){
+static Node *new_node_ident(char *input){
     Node *node = malloc(sizeof(Node));
     node->ty = ND_IDENT;
     node->name = input;
     return node;
 }
 
-Node *new_node_func(char *input){
+static Node *new_node_call(char *input){
     Node *node = malloc(sizeof(Node));
-    node->ty = ND_FUNC;
+    node->ty = ND_CALL;
     node->name = input;
     return node;
 }
 
-int consume(int ty){
+static int consume(int ty){
     Token *token = (Token *)(tokens->data[pos]);
     if (token->ty != ty)
         return 0;
@@ -46,7 +51,7 @@ void program(){
     code[i] = NULL;
 }
 
-Node *stmt(){
+static Node *stmt(){
     Token *token = (Token *)(tokens->data[pos]);
     Node *node = assign();
     if (!consume(';')){
@@ -56,7 +61,7 @@ Node *stmt(){
     return node;
 }        
 
-Node *assign(){
+static Node *assign(){
     Node *node = eq();
     
     for (;;){
@@ -67,7 +72,7 @@ Node *assign(){
     }
 }
 
-Node *eq(){
+static Node *eq(){
     Node *node = add();
 
     for (;;){
@@ -80,7 +85,7 @@ Node *eq(){
     }
 }
 
-Node *add(){
+static Node *add(){
     Node *node = mul();
     
     for (;;){
@@ -93,7 +98,7 @@ Node *add(){
     }
 }
 
-Node *mul(){
+static Node *mul(){
     Node *node = term();
 
     for (;;){
@@ -106,7 +111,7 @@ Node *mul(){
     }
 }
     
-Node *term(){
+static Node *term(){
     Token *token = (Token *)(tokens->data[pos]);
 
     if (consume('(')){
@@ -123,10 +128,10 @@ Node *term(){
         return new_node_num(token->val);
     
     if (consume(TK_IDENT))
-        return new_node_ident(token->input);
-
-    if (consume(TK_FUNC))
-        return new_node_func(token->input);
+        if (!consume('('))
+            return new_node_ident(token->input);
+        else if (consume(')'))
+            return new_node_call(token->input);
 
     fprintf(stderr,"found an unknown token: %s", token->input);
     exit(1);
@@ -138,7 +143,7 @@ void gen_lval(Node *node){
         exit(1);
     }
 
-    int offset = (int)map_get(vars, node->name) * 8;
+    int offset = (int)map_get(idents, node->name) * 8;
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", offset);
     printf("    push rax\n");
@@ -158,7 +163,7 @@ void gen(Node *node){
         return;
     }
 
-    if (node->ty == ND_FUNC){
+    if (node->ty == ND_CALL){
         printf("    mov rax, 0\n");
         printf("    call %s\n", node->name);
         printf("    push rax\n");

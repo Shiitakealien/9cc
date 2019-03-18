@@ -1,8 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 // indicating the type of a token
 enum {
     TK_NUM = 256,   // integer token
     TK_IDENT,       // identifier token
-    TK_FUNC,        // function token
     TK_EQ,          // ==
     TK_EQN,         // !=
     TK_EOF,         // End Of File token
@@ -26,7 +30,7 @@ typedef struct {
 enum {
     ND_NUM = 256,       // Node type of integer
     ND_IDENT,           // Node type of identifer
-    ND_FUNC,            // Node type of function
+    ND_CALL,            // Node type of function call
     ND_EQ,              // Node type of ==
     ND_EQN,             // Node type of !=
 };
@@ -48,8 +52,7 @@ typedef struct {
 
 extern int pos;
 extern Vector *tokens;
-extern Map *vars;
-extern Map *funcs;
+extern Map *idents;
 extern Node *code[100];
 
 Vector *new_vector();
@@ -57,27 +60,10 @@ void vec_push(Vector *vec, void *elem);
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
-void add_var(Map *map, char *name);
-Token *add_token(Vector *tokens, int ty, char *input);
-char *add_token_func_var(Vector *tokens, char *p);
 int isoperator(char *p);
 Vector *tokenizer(char *p);
-int expect(int line, int expected, int actual);
-void test_vector();
-void test_map() ;
 void runtest();
-Node *new_node(int ty, Node *lhs, Node *rhs);
-Node *new_node_num(int val);
-Node *new_node_ident(char *input);
-Node *new_node_func(char *input);
-int consume(int ty);
 void program();
-Node *stmt();
-Node *assign();
-Node *eq();
-Node *add();
-Node *mul();
-Node *term();
 void gen_lval(Node *node);
 void gen(Node *node);
 

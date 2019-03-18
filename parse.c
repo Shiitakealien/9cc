@@ -1,19 +1,11 @@
 #include "9cc.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
 
-void add_var(Map *map, char *name){
+static void add_ident(Map *map, char *name){
     if (map_get(map, name) == NULL)
         map_put(map, name, (void *)(map->keys->len));
 }
 
-void add_func(Map *map, char *name){
-    if (map_get(map, name) == NULL)
-        map_put(map, name, (void *)(map->keys->len));
-}
-
-Token *add_token(Vector *tokens, int ty, char *input){
+static Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
     token->input = input;
@@ -21,34 +13,15 @@ Token *add_token(Vector *tokens, int ty, char *input){
     return token;
 }
 
-char *add_token_func_var(Vector *tokens, char *p){
+static char *add_token_ident(Vector *tokens, char *p){
     char *name = malloc(sizeof(char) * 256);
     int i = 0;
-    while (('a' <= *p && *p <= 'z') || 
-           ('A' <= *p && *p <= 'Z' ) || isdigit(*p))
+    while ( isalnum(*p) || *p == '_')
         *(name+i++) = *p++;
-    if (*p == '('){
-        *(name+i) = '\0';
-        add_func(funcs, name);
-        add_token(tokens, TK_FUNC, name);
-        while (*p != ')')
-            p++;
-        p++;
-    } else {
-        *(name+i) = '\0';
-        add_var(vars, name);
-        add_token(tokens, TK_IDENT, name);
-    }
+    *(name+i) = '\0';
+    add_ident(idents, name);
+    add_token(tokens, TK_IDENT, name);
     return p;
-}
-
-int isoperator(char *p){
-    if (*p == '+' || *p == '-' || 
-        *p == '*' || *p == '/' || 
-        *p == '(' || *p == ')' ||
-        *p == '=' || *p == ';' || *p == '!')
-        return 1;
-    return 0;
 }
 
 // separate a string pointed by 'p' and save in 'tokens'
@@ -62,7 +35,7 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if (isoperator(p)){
+        if (strchr("+-*/()=;!", *p)){
             if (*p == '=' && *(p+1) == '='){
                 add_token(vec, TK_EQ, p);
                 p+=2;
@@ -76,9 +49,8 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if (('a' <= *p && *p <= 'z') || 
-            ('A' <= *p && *p <= 'Z')){
-            p = add_token_func_var(vec, p);
+        if (isalpha(*p) || *p == '_' ){
+            p = add_token_ident(vec, p);
             continue;
         }
 
