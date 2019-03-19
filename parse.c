@@ -1,10 +1,5 @@
 #include "9cc.h"
 
-static void add_ident(Map *map, char *name){
-    if (map_get(map, name) == NULL)
-        map_put(map, name, (void *)(map->keys->len));
-}
-
 static Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
@@ -19,7 +14,6 @@ static char *add_token_ident(Vector *tokens, char *p){
     while ( isalnum(*p) || *p == '_')
         *(name+i++) = *p++;
     *(name+i) = '\0';
-    add_ident(idents, name);
     add_token(tokens, TK_IDENT, name);
     return p;
 }
@@ -35,7 +29,7 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if (strchr("+-*/()=;!,", *p)){
+        if (strchr("+-*/(){}=;!,", *p)){
             if (*p == '=' && *(p+1) == '='){
                 add_token(vec, TK_EQ, p);
                 p+=2;

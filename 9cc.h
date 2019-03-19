@@ -26,6 +26,12 @@ typedef struct {
     int len;
 } Vector;
 
+// associative array 
+typedef struct {
+    Vector *keys;
+    Vector *vals;
+} Map;
+
 // indicating the type of a node
 enum {
     ND_NUM = 256,       // Node type of integer
@@ -45,16 +51,16 @@ typedef struct Node {
     Vector *args;       // arguments for ND_CALL
 } Node;
 
-// associative array 
+// struction of function
 typedef struct {
-    Vector *keys;
-    Vector *vals;
-} Map;
+    char   *name;       // function name
+    Vector *args;       // will be used
+    Node   *code[100];  // Nodes constructing definition of a function
+    Map    *idents;     // local identifiers
+} Function;
 
-extern int pos;
+extern int pos; // indicates the position in all of tokens
 extern Vector *tokens;
-extern Map *idents;
-extern Node *code[100];
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
@@ -64,7 +70,5 @@ void *map_get(Map *map, char *key);
 int isoperator(char *p);
 Vector *tokenizer(char *p);
 void runtest();
-void program();
-void gen(Node *node);
-
-
+Vector *program();
+void gen(Function *func, Node *node);
