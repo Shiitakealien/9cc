@@ -56,4 +56,6 @@ try 20 "a=1;foo1(a,10);"
 try 3 "a=1;foo2(3,10);"
 try 13 "a=1;foo3(3,10);"
 try 7 "a=1;foo4(10,3);"
+try 5 "a=1;b=4;foo3(a,b);"
+try 6 "a=1;b=4;foo3(a,a+b);"
 echo OK
