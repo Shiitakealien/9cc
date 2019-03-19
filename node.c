@@ -15,23 +15,10 @@ static Node *new_node(int ty, Node *lhs, Node *rhs){
     return node;
 }
 
-static Node *new_node_num(int val){
+static Node *new_node_term(int ty, int val, char *input){
     Node *node = malloc(sizeof(Node));
-    node->ty = ND_NUM;
+    node->ty = ty;
     node->val = val;
-    return node;
-}
-
-static Node *new_node_ident(char *input){
-    Node *node = malloc(sizeof(Node));
-    node->ty = ND_IDENT;
-    node->name = input;
-    return node;
-}
-
-static Node *new_node_call(char *input){
-    Node *node = malloc(sizeof(Node));
-    node->ty = ND_CALL;
     node->name = input;
     return node;
 }
@@ -93,52 +80,44 @@ static Node *stmt(Function *func){
 
 static Node *assign(Function *func){
     Node *node = eq(func);
-    
-    for (;;){
+    for (;;)
         if (consume('='))
             node = new_node('=', node, assign(func));
         else
             return node;
-    }
 }
 
 static Node *eq(Function *func){
     Node *node = add(func);
-
-    for (;;){
+    for (;;)
         if (consume(TK_EQ))
             node = new_node(ND_EQ, node, add(func));
         else if (consume(TK_EQN))
             node = new_node(ND_EQN, node, add(func));
         else
             return node;
-    }
 }
 
 static Node *add(Function *func){
     Node *node = mul(func);
-    
-    for (;;){
+    for (;;)
         if (consume('+'))
             node = new_node('+', node, mul(func));
         else if (consume('-'))
             node = new_node('-', node, mul(func));
         else
             return node;
-    }
 }
 
 static Node *mul(Function *func){
     Node *node = term(func);
-
-    for (;;){
+    for (;;)
         if (consume('*'))
             node = new_node('*', node, term(func));
         else if (consume('/'))
             node = new_node('/', node, term(func));
         else
             return node;
-    }
 }
     
 static Node *term(Function *func){
@@ -155,15 +134,15 @@ static Node *term(Function *func){
     }
 
     if (consume(TK_NUM))
-        return new_node_num(token->val);
+        return new_node_term(ND_NUM,token->val,token->input);
     
     if (consume(TK_IDENT)){
         if (!consume('(')){
             add_ident(func->idents, token->input);
-            return new_node_ident(token->input);
+            return new_node_term(ND_IDENT,token->val,token->input);
         }
         else {
-            Node *node = new_node_call(token->input);
+            Node *node = new_node_term(ND_CALL,token->val,token->input);
             node->args = new_vector();
             if (!consume(')')) { // get arguments
                 do{
