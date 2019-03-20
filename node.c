@@ -45,46 +45,35 @@ static Function *add_func(Vector *funcs, char *name){
     return func;
 }
 
-Vector *program(){
-    int i;
-    Function *func;
-    Vector *funcs = new_vector();
-    while (((Token *)(tokens->data[pos]))->ty != TK_EOF){
-        if (((Token *)(tokens->data[pos]))->ty != TK_IDENT){
-            fprintf(stderr,"function name is needed");
-            exit(1);
-        } else {
-            i = 0;
-            func = add_func(funcs, ((Token *)(tokens->data[pos]))->input);
-            pos++;
-            consume('(');
-            for(;;){
-                if(consume(')'))
-                    break;
-                add_ident(func->idents,((Token *)(tokens->data[pos]))->input);
-                vec_push(func->args,(void *)(((Token *)(tokens->data[pos]))->input));
-                pos++;
-                consume(',');
-            }
-            consume('{');
-            while (((Token *)(tokens->data[pos]))->ty != '}')
-                func->code[i++] = stmt(func);
-            func->code[i] = NULL;
-            consume('}');
-        }
+static Token *current_token(){
+    return (Token *)(tokens->data[pos]);
+}
+
+static Node *cond(Function *func){
+    if (consume(TK_RETURN))
+        return new_node(ND_RETURN, stmt(func), (Node *)NULL);
+    else if (consume(TK_IF)){
+        (consume('('));
+        Node *cond_node = assign(func);
+        consume(')');
+        Node *if_node = new_node(ND_IF, cond(func), (Node *)NULL);
+        if_node->cond=cond_node;
+        if (consume(TK_ELSE))
+            if_node->rhs = cond(func);
+        return if_node;
     }
-    return funcs;
+    return stmt(func);
 }
 
 static Node *stmt(Function *func){
     Token *token = (Token *)(tokens->data[pos]);
     Node *node = assign(func);
     if (!consume(';')){
-        fprintf(stderr,"token without ';': %s", token->input);
+        fprintf(stderr,"token without ';': %s\n", token->input);
         exit(1);
     }
     return node;
-}        
+}   
 
 static Node *assign(Function *func){
     Node *node = eq(func);
@@ -162,6 +151,43 @@ static Node *term(Function *func){
         }
     }
 
-    fprintf(stderr,"found an unknown token: %s", token->input);
+    fprintf(stderr,"found an unknown token: %s\n", token->input);
     exit(1);
+}
+
+Vector *program(){
+    int i;
+    Token *token = current_token();
+    Function *func;
+    Vector *funcs = new_vector();
+    while (token->ty != TK_EOF){
+        if (token->ty != TK_IDENT){
+            fprintf(stderr,"function name is needed");
+            exit(1);
+        } else {
+            i = 0;
+            func = add_func(funcs, token->input);
+            pos++;
+            consume('(');
+            for(;;){
+                if(consume(')'))
+                    break;
+                token = current_token();
+                add_ident(func->idents,token->input);
+                vec_push(func->args,(void *)token->input);
+                pos++;
+                consume(',');
+            }
+            consume('{');
+            token = current_token();
+            while (token->ty != '}'){
+                func->code[i++] = cond(func);
+                token = current_token();
+            }
+            func->code[i] = NULL;
+            consume('}');
+            token = current_token();
+        }
+    }
+    return funcs;
 }

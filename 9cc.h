@@ -4,9 +4,12 @@
 #include <ctype.h>
 
 // indicating the type of a token
-enum {
+enum TK_NUM {
     TK_NUM = 256,   // integer token
     TK_IDENT,       // identifier token
+    TK_IF,          // if
+    TK_ELSE,        // else
+    TK_RETURN,      // return
     TK_EQ,          // ==
     TK_EQN,         // !=
     TK_EOF,         // End Of File token
@@ -14,8 +17,8 @@ enum {
 
 // Token Type
 typedef struct {
-    int ty;         // Token's type
-    int val;        // Token's value, used when ty is TK_NUM
+    int  ty;        // Token's type
+    int  val;       // Token's value, used when ty is TK_NUM
     char *input;    // Token's string
 } Token;
 
@@ -33,12 +36,14 @@ typedef struct {
 } Map;
 
 // indicating the type of a node
-enum {
-    ND_NUM = 256,       // Node type of integer
-    ND_IDENT,           // Node type of identifer
-    ND_CALL,            // Node type of function call
-    ND_EQ,              // Node type of ==
-    ND_EQN,             // Node type of !=
+enum ND_NUM {
+    ND_NUM = 256,       // integer
+    ND_IDENT,           // identifer
+    ND_CALL,            // function call
+    ND_IF,              // if
+    ND_RETURN,          // return
+    ND_EQ,              // ==
+    ND_EQN,             // !=
 };
 
 // Node Type
@@ -46,6 +51,7 @@ typedef struct Node {
     int ty;             // type -- operator or ND_NUM
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
+    struct Node *cond;  // condition when ty is ND_IF
     int val;            // used only when ty is ND_NUM
     char *name;         // used only when ty is ND_IDENT
     Vector *args;       // arguments for ND_CALL

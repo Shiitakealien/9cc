@@ -46,10 +46,6 @@ int main(int argc, char **argv){
                 gen(func,func->code[j]);
                 printf("    pop rax\n");
             }
-            // We have the result at the top of the stack
-            printf("    mov rsp, rbp\n");
-            printf("    pop rbp\n");
-            printf("    ret\n");
         }
     }
     return 0;

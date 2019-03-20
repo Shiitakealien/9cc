@@ -8,13 +8,25 @@ static Token *add_token(Vector *tokens, int ty, char *input){
     return token;
 }
 
+static int check_keyword(char *p){
+    if (strcmp(p,"if") == 0)
+        return TK_IF;
+    else if (strcmp(p,"else") == 0)
+        return TK_ELSE;
+    else if (strcmp(p,"return") == 0)
+        return TK_RETURN;
+    else
+        return TK_IDENT;
+}
+
 static char *add_token_ident(Vector *tokens, char *p){
     char *name = malloc(sizeof(char) * 256);
     int i = 0;
     while ( isalnum(*p) || *p == '_')
         *(name+i++) = *p++;
     *(name+i) = '\0';
-    add_token(tokens, TK_IDENT, name);
+    int ty = check_keyword(name);
+    add_token(tokens, ty, name);
     return p;
 }
 
