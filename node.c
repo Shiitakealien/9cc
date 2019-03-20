@@ -39,6 +39,7 @@ static void add_ident(Map *map, char *name){
 static Function *add_func(Vector *funcs, char *name){
     Function *func = malloc(sizeof(Function));
     func->name = name;
+    func->args = new_vector();
     func->idents = new_map();
     vec_push(funcs, (void *)func);
     return func;
@@ -57,7 +58,14 @@ Vector *program(){
             func = add_func(funcs, ((Token *)(tokens->data[pos]))->input);
             pos++;
             consume('(');
-            consume(')');
+            for(;;){
+                if(consume(')'))
+                    break;
+                add_ident(func->idents,((Token *)(tokens->data[pos]))->input);
+                vec_push(func->args,(void *)(((Token *)(tokens->data[pos]))->input));
+                pos++;
+                consume(',');
+            }
             consume('{');
             while (((Token *)(tokens->data[pos]))->ty != '}')
                 func->code[i++] = stmt(func);

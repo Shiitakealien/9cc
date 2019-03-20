@@ -4,20 +4,17 @@ try(){
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -c tmp.s
-    gcc -o tmp tmp.o func_define.o
+    gcc -o tmp tmp.s
     ./tmp
     actual="$?"
 
     if [ "$actual" = "$expected" ]; then
         echo "$input => $actual"
     else
-        echo "$expected expected, but got $actual"
+        echo "input is $input : $expected expected, but got $actual"
         exit 1
     fi
 }
-
-cat func_define.c
 try 0  "main(){0;}"
 try 42 "main(){42;}"
 try 21 "main(){5+20-4;}"
@@ -49,16 +46,22 @@ try 1  "main(){a=2;b=3;a!=b;}"
 try 3  "foo() {3;}bar() {2;} main(){bar(); foo(    );}"
 try 2  "foo() {3;}bar() {2;} main(){foo(); bar(    );}"
 try 5  "foo() {3;}bar() {2;} main(){a=foo();b=bar();a+b;}"
-try 2  "main(){foo0(1);}"
-try 2  "main(){a=1;foo0(a);}"
-try 20 "main(){foo1(1,10);}"
-try 20 "main(){a=1;foo1(a,10);}"
-try 3  "main(){a=1;foo2(3,10);}"
-try 13 "main(){a=1;foo3(3,10);}"
-try 7  "main(){a=1;foo4(10,3);}"
-try 5  "main(){a=1;b=4;foo3(a,b);}"
-try 6  "main(){a=1;b=4;foo3(a,a+b);}"
+try 2  "foo0(x){2;}main(){foo0(1);}"
+try 2  "foo0(x){2;}main(){a=1;foo0(a);}"
+try 20 "foo1(x,y){20;}main(){foo1(1,10);}"
+try 20 "foo1(x,y){20;}main(){a=1;foo1(a,10);}"
+try 3  "foo2(x,y){x;}main(){a=1;foo2(3,10);}"
+try 13 "foo3(x,y){x+y;}main(){a=1;foo3(3,10);}"
+try 7  "foo4(x,y){x-y;}main(){a=1;foo4(10,3);}"
+try 5  "foo3(x,y){x+y;}main(){a=1;b=4;foo3(a,b);}"
+try 6  "foo3(x,y){x+y;}main(){a=1;b=4;foo3(a,a+b);}"
 try 1  "a(){1;}main(){a();}"
 try 2  "a(){2;}main(){a();}"
 try 10 "a(){2;}b(){3;}main(){c=a()+b();2*c;}"
+try 5 "a(x,y){x+y;}main(){a(2,3);}"
+try 6 "a(x,y){x*y;}main(){a(2,3);}"
+try 3 "a(x,y){y;}main(){a(2,3);}"
+try 2 "a(x,y){x;}main(){a(2,3);}"
+try 17 "a(x,y,z){x+y*z;}main(){a(2,3,5);}"
+
 echo OK

@@ -24,14 +24,22 @@ int main(int argc, char **argv){
         printf("\n");
         for (int i = 0; i < funcs->len; i++){
             Function *func = (Function *)(funcs->data[i]);
-            printf("%s:",func->name);
+            printf("%s:\n",func->name);
 
-            // prologue
-            int var_num = func->idents->keys->len; // number of local variables
-            int heap = 16-((var_num*8)%16)+var_num*8;
+            // function prologue
             printf("    push rbp\n");
             printf("    mov rbp, rsp\n");
+            // Reserve a space for local variables
+            int var_num = func->idents->keys->len; // number of local variables
+            int heap = 16-((var_num*8)%16)+var_num*8;
             printf("    sub rsp, %d\n", heap);
+            // copy every arg into the local variable
+            char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
+            for (int i = func->args->len-1; i >= 0; i--){
+                printf("    mov rax, rbp\n");
+                printf("    sub rax, %d\n",(func->args->len-i)*8);
+                printf("    mov [rax], %s\n",reg[i]);
+            }
 
             // generate a code from the head
             for (int j = 0; func->code[j]; j++){
