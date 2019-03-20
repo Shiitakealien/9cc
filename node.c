@@ -157,4 +157,3 @@ static Node *term(Function *func){
     fprintf(stderr,"found an unknown token: %s", token->input);
     exit(1);
 }
-
