@@ -89,7 +89,9 @@ static Node *cond(Function *func){
 
 static Node *stmt(Function *func){
     Node *node = (Node *)NULL;
-    if (consume('{')){
+    if (consume(';'))
+        return new_node(ND_NOP, (Node *)NULL, (Node *)NULL);
+    else if (consume('{')){
         while(!consume('}')) // generate node at every loop
             node = new_node(ND_NOP, node, stmt(func));
         return node;

@@ -15,6 +15,7 @@ try(){
         exit 1
     fi
 }
+try 0   "main(){;;;return 0;}"
 try 0   "main(){return 0;}"
 try 42  "main(){return 42;}"
 try 21  "main(){return 5+20-4;}"
