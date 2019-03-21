@@ -75,6 +75,16 @@ static Node *cond(Function *func){
             if_node->rhs = cond(func);
         return if_node;
     }
+    else if (consume(TK_WHILE)){
+        int id = pos - 1; // token number of "if"
+        expect('(');
+        Node *cond_node = assign(func);
+        expect(')');
+        Node *if_node = new_node(ND_WHILE, cond(func), (Node *)NULL);
+        if_node->cond=cond_node;
+        if_node->id=id;
+        return if_node;
+    }
     return stmt(func);
 }
 

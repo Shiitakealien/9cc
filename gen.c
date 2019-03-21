@@ -17,7 +17,7 @@ void gen(Function *func, Node *node){
         gen(func, node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
-        printf("    je .Lif%d\n",node->id);  // The label needs to be variable
+        printf("    je .Lif%d\n",node->id);
         gen(func, node->lhs);
         printf("    jmp .Lelse%d\n",node->id);
         printf(".Lif%d:\n",node->id);
@@ -25,6 +25,15 @@ void gen(Function *func, Node *node){
             gen(func, node->rhs);
         }
         printf(".Lelse%d:\n",node->id);
+    } else if (node->ty == ND_WHILE){
+        printf(".LwhileBegin%d:\n",node->id);
+        gen(func, node->cond);
+        printf("    pop rax\n");
+        printf("    cmp rax, 0\n");
+        printf("    je .LwhileEnd%d\n",node->id);
+        gen(func, node->lhs);
+        printf("    jmp .LwhileBegin%d\n",node->id);
+        printf(".LwhileEnd%d:\n",node->id);
     } else if (node->ty == ND_RETURN){
         gen(func, node->lhs);
         // We have the result at the top of the stack

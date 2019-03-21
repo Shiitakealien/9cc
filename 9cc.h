@@ -9,6 +9,7 @@ enum TK_NUM {
     TK_IDENT,       // identifier token
     TK_IF,          // if
     TK_ELSE,        // else
+    TK_WHILE,       // while
     TK_RETURN,      // return
     TK_EQ,          // ==
     TK_EQN,         // !=
@@ -41,6 +42,7 @@ enum ND_NUM {
     ND_IDENT,           // identifer
     ND_CALL,            // function call
     ND_IF,              // if
+    ND_WHILE,           // while
     ND_RETURN,          // return
     ND_EQ,              // ==
     ND_EQN,             // !=

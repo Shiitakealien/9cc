@@ -13,6 +13,8 @@ static int check_keyword(char *p){
         return TK_IF;
     else if (strcmp(p,"else") == 0)
         return TK_ELSE;
+    else if (strcmp(p,"while") == 0)
+        return TK_WHILE;
     else if (strcmp(p,"return") == 0)
         return TK_RETURN;
     else
