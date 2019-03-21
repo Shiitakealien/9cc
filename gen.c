@@ -17,14 +17,14 @@ void gen(Function *func, Node *node){
         gen(func, node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
-        printf("    je .Lend\n");  // The label needs to be variable
+        printf("    je .Lif%d\n",node->id);  // The label needs to be variable
         gen(func, node->lhs);
-        printf("    jmp .Lend0\n");
-        printf(".Lend:\n");
+        printf("    jmp .Lelse%d\n",node->id);
+        printf(".Lif%d:\n",node->id);
         if(node->rhs != NULL){
             gen(func, node->rhs);
         }
-        printf(".Lend0:\n");
+        printf(".Lelse%d:\n",node->id);
     } else if (node->ty == ND_RETURN){
         gen(func, node->lhs);
         // We have the result at the top of the stack

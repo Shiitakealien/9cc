@@ -55,6 +55,7 @@ typedef struct Node {
     int val;            // used only when ty is ND_NUM
     char *name;         // used only when ty is ND_IDENT
     Vector *args;       // arguments for ND_CALL
+    int id;             // id number for jump label
 } Node;
 
 // struction of function

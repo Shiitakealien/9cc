@@ -53,11 +53,13 @@ static Node *cond(Function *func){
     if (consume(TK_RETURN))
         return new_node(ND_RETURN, stmt(func), (Node *)NULL);
     else if (consume(TK_IF)){
+        int id = pos - 1; // token number of "if"
         (consume('('));
         Node *cond_node = assign(func);
         consume(')');
         Node *if_node = new_node(ND_IF, cond(func), (Node *)NULL);
         if_node->cond=cond_node;
+        if_node->id=id;
         if (consume(TK_ELSE))
             if_node->rhs = cond(func);
         return if_node;

@@ -65,5 +65,6 @@ try 2   "a(x,y){return x;}main(){return a(2,3);}"
 try 17  "a(x,y,z){return x+y*z;}main(){return a(2,3,5);}"
 try 1   "main(){if(1)return 1;}"
 try 2   "main(){if(0)return 1;else return 2;}"
+try 3   "f(n1,n0){return n1+n0;}main(){return f(f(1,1),1);}"
 
 echo OK
