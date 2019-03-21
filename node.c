@@ -1,5 +1,6 @@
 #include "9cc.h"
 
+static Node *cond(Function *func);
 static Node *stmt(Function *func);
 static Node *assign(Function *func);
 static Node *eq(Function *func);
@@ -37,7 +38,10 @@ static int expect(int ty){
     else {
         int exp = ((Token *)(tokens->data[pos]))->ty;
         int res = ty;
-        fprintf(stderr,"token error, expect %d but got %d\n", exp, res);
+        char *res_c = ((Token *)(tokens->data[pos]))->input;
+        fprintf(stderr,
+                "token error: expect %d, got %d( '%s') at %dth token\n", 
+                exp, res, res_c, pos);
         exit(1);
     }
 }
@@ -60,39 +64,40 @@ static Token *current_token(){
     return (Token *)(tokens->data[pos]);
 }
 
+static Node *cond_node(Function *func, int ty){
+    int id = pos - 1; // token number of "if"
+    expect('(');
+    Node *cond_n = assign(func);
+    expect(')');
+    Node *node = new_node(ty, cond(func), (Node *)NULL);
+    node->cond=cond_n;
+    node->id=id;
+    if (consume(TK_ELSE) && ty == TK_IF)
+        node->rhs = cond(func);
+    return node;
+}
+
 static Node *cond(Function *func){
     if (consume(TK_RETURN))
         return new_node(ND_RETURN, stmt(func), (Node *)NULL);
-    else if (consume(TK_IF)){
-        int id = pos - 1; // token number of "if"
-        expect('(');
-        Node *cond_node = assign(func);
-        expect(')');
-        Node *if_node = new_node(ND_IF, cond(func), (Node *)NULL);
-        if_node->cond=cond_node;
-        if_node->id=id;
-        if (consume(TK_ELSE))
-            if_node->rhs = cond(func);
-        return if_node;
-    }
-    else if (consume(TK_WHILE)){
-        int id = pos - 1; // token number of "if"
-        expect('(');
-        Node *cond_node = assign(func);
-        expect(')');
-        Node *if_node = new_node(ND_WHILE, cond(func), (Node *)NULL);
-        if_node->cond=cond_node;
-        if_node->id=id;
-        return if_node;
-    }
+    else if (consume(TK_IF))
+        return cond_node(func, ND_IF);
+    else if (consume(TK_WHILE))
+        return cond_node(func, ND_WHILE);
     return stmt(func);
 }
 
 static Node *stmt(Function *func){
-    Token *token = (Token *)(tokens->data[pos]);
-    Node *node = assign(func);
-    expect(';');
-    return node;
+    Node *node = (Node *)NULL;
+    if (consume('{')){
+        while(!consume('}')) // generate node at every loop
+            node = new_node(ND_NOP, node, stmt(func));
+        return node;
+    } else {
+        node = assign(func);
+        expect(';');
+        return node;
+    }
 }   
 
 static Node *assign(Function *func){
@@ -138,28 +143,28 @@ static Node *mul(Function *func){
 }
     
 static Node *term(Function *func){
-    Token *token = (Token *)(tokens->data[pos]);
+    Token *t = (Token *)(tokens->data[pos]);
 
     if (consume('(')){
         Node *node = add(func);
         if (!consume(')')){
             fprintf(stderr,"'(' without ')': %s", 
-                    token->input);
+                    t->input);
             exit(1);
         }
         return node;
     }
 
     if (consume(TK_NUM))
-        return new_node_term(ND_NUM,token->val,token->input);
+        return new_node_term(ND_NUM,t->val,t->input);
     
     if (consume(TK_IDENT)){
         if (!consume('(')){
-            add_ident(func->idents, token->input);
-            return new_node_term(ND_IDENT,token->val,token->input);
+            add_ident(func->idents, t->input);
+            return new_node_term(ND_IDENT,t->val,t->input);
         }
         else {
-            Node *node = new_node_term(ND_CALL,token->val,token->input);
+            Node *node = new_node_term(ND_CALL,t->val,t->input);
             node->args = new_vector();
             if (!consume(')')) { // get arguments
                 do{
@@ -171,7 +176,7 @@ static Node *term(Function *func){
         }
     }
 
-    fprintf(stderr,"found an unknown token: %s\n", token->input);
+    fprintf(stderr,"found an unknown token: %s\n", t->input);
     exit(1);
 }
 

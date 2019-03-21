@@ -46,6 +46,7 @@ enum ND_NUM {
     ND_RETURN,          // return
     ND_EQ,              // ==
     ND_EQN,             // !=
+    ND_NOP,             // NOP
 };
 
 // Node Type
@@ -76,7 +77,6 @@ void vec_push(Vector *vec, void *elem);
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
-int isoperator(char *p);
 Vector *tokenizer(char *p);
 void runtest();
 Vector *program();
