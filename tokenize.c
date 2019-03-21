@@ -43,12 +43,18 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if (strchr("+-*/(){}=;!,", *p)){
+        if (strchr("+-*/(){}=;!,<>", *p)){
             if (*p == '=' && *(p+1) == '='){
                 add_token(vec, TK_EQ, p);
                 p+=2;
             } else if (*p == '!' && *(p+1) == '=') {
                 add_token(vec, TK_EQN, p);
+                p+=2;
+            } else if (*p == '>' && *(p+1) == '=') {
+                add_token(vec, TK_GE, p);
+                p+=2;
+            } else if (*p == '<' && *(p+1) == '=') {
+                add_token(vec, TK_LE, p);
                 p+=2;
             } else { // one charactor operator
                 add_token(vec, *p, p);

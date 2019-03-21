@@ -116,6 +116,14 @@ static Node *eq(Function *func){
             node = new_node(ND_EQ, node, add(func));
         else if (consume(TK_EQN))
             node = new_node(ND_EQN, node, add(func));
+        else if (consume('>'))
+            node = new_node('>', node, add(func));
+        else if (consume(TK_GE))
+            node = new_node(ND_GE, node, add(func));
+        else if (consume('<'))
+            node = new_node('<', node, add(func));
+        else if (consume(TK_LE))
+            node = new_node(ND_LE, node, add(func));
         else
             return node;
 }

@@ -13,6 +13,8 @@ enum TK_NUM {
     TK_RETURN,      // return
     TK_EQ,          // ==
     TK_EQN,         // !=
+    TK_GE,          // >=
+    TK_LE,          // <=
     TK_EOF,         // End Of File token
 };
 
@@ -46,6 +48,8 @@ enum ND_NUM {
     ND_RETURN,          // return
     ND_EQ,              // ==
     ND_EQN,             // !=
+    ND_GE,              // >=
+    ND_LE,              // <=
     ND_NOP,             // NOP
 };
 

@@ -53,6 +53,26 @@ static void gen_bin(Node *node){
             printf("    setne al\n");
             printf("    movzb rax, al\n");
             break;
+        case '>':
+            printf("    cmp rdi, rax\n");
+            printf("    setl al\n");
+            printf("    movzb rax, al\n");
+            break;
+        case ND_GE:
+            printf("    cmp rdi, rax\n");
+            printf("    setle al\n");
+            printf("    movzb rax, al\n");
+            break;
+        case '<':
+            printf("    cmp rax, rdi\n");
+            printf("    setl al\n");
+            printf("    movzb rax, al\n");
+            break;
+        case ND_LE:
+            printf("    cmp rax, rdi\n");
+            printf("    setle al\n");
+            printf("    movzb rax, al\n");
+            break;
         case '+':
             printf("    add rax, rdi\n");
             break;
