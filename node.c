@@ -34,7 +34,7 @@ static int consume(int ty){
 
 static int expect(int ty){
     if (consume(ty))
-        return 0;
+        return 1;
     else {
         int exp = ((Token *)(tokens->data[pos]))->ty;
         int res = ty;
@@ -78,7 +78,12 @@ static Node *cond_node(Function *func, int ty){
 }
 
 static Node *cond(Function *func){
-    if (consume(TK_RETURN))
+    if (consume(TK_INT)){
+        add_ident(func->idents, ((Token *)(tokens->data[pos]))->input);
+        expect(TK_IDENT);
+        expect(';');
+        return new_node(ND_NOP, (Node *)NULL, (Node *)NULL);
+    } else if (consume(TK_RETURN))
         return new_node(ND_RETURN, stmt(func), (Node *)NULL);
     else if (consume(TK_IF))
         return cond_node(func, ND_IF);
@@ -222,36 +227,35 @@ static Node *term(Function *func){
 
 Vector *program(){
     int i;
-    Token *token = current_token();
+    Token *t = current_token();
     Function *func;
     Vector *funcs = new_vector();
-    while (token->ty != TK_EOF){
-        if (token->ty != TK_IDENT){
-            fprintf(stderr,"function name is needed");
-            exit(1);
-        } else {
+    while (t->ty != TK_EOF){
+        if (consume(TK_INT)){
             i = 0;
-            func = add_func(funcs, token->input);
-            pos++;
+            t = current_token();
+            func = add_func(funcs, t->input);
+            expect(TK_IDENT);
             expect('(');
             for(;;){
                 if(consume(')'))  // no arguments
                     break;
-                token = current_token();
-                add_ident(func->idents,token->input);
-                vec_push(func->args,(void *)token->input);
+                expect(TK_INT);
+                t = current_token();
+                add_ident(func->idents,t->input);
+                vec_push(func->args,(void *)t->input);
                 pos++;
                 consume(',');
             }
             expect('{');
-            token = current_token();
-            while (token->ty != '}'){
+            t = current_token();
+            while (t->ty != '}'){
                 func->code[i++] = cond(func);
-                token = current_token();
+                t = current_token();
             }
             func->code[i] = NULL;
             expect('}');
-            token = current_token();
+            t = current_token();
         }
     }
     return funcs;

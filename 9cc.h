@@ -7,6 +7,7 @@
 enum TK_NUM {
     TK_NUM = 256,   // integer token
     TK_IDENT,       // identifier token
+    TK_INT,         // int
     TK_IF,          // if
     TK_ELSE,        // else
     TK_WHILE,       // while

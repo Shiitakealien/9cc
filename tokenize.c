@@ -9,7 +9,9 @@ static Token *add_token(Vector *tokens, int ty, char *input){
 }
 
 static int check_keyword(char *p){
-    if (strcmp(p,"if") == 0)
+    if (strcmp(p,"int") == 0)
+        return TK_INT;
+    else if (strcmp(p,"if") == 0)
         return TK_IF;
     else if (strcmp(p,"else") == 0)
         return TK_ELSE;
