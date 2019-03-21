@@ -83,4 +83,6 @@ try 6   "main(){a=0;while(a!=6)a=a+1;return a;}"
 try 1   "main(){{a=1;}return a;}"
 try 10  "main(){a=0;while(a!=10){a=a+1;}return a;}"
 try 10  "main(){a=0;while(a!=10){a=a+1;a=a-2;a=a+2;}return a;}"
+try 11  "main(){a=3;b=1;for(a=0;a<=10;a=a+1)b=a;return a;}"
+try 11  "main(){a=3;b=1;for(;a<=10;){b=a;a=a+1;}return a;}"
 echo OK

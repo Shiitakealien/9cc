@@ -17,6 +17,8 @@ static int check_keyword(char *p){
         return TK_WHILE;
     else if (strcmp(p,"return") == 0)
         return TK_RETURN;
+    else if (strcmp(p,"for") == 0)
+        return TK_FOR;
     else
         return TK_IDENT;
 }

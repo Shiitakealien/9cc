@@ -37,6 +37,18 @@ static void gen_while(Function *func, Node *node){
     printf(".LwhileEnd%d:\n",node->id);
 }
 
+static void gen_for(Function *func, Node *node){
+    printf(".LforBegin%d:\n",node->id);
+    gen(func, node->cond);
+    printf("    pop rax\n");
+    printf("    cmp rax, 0\n");
+    printf("    je .LforEnd%d\n",node->id);
+    gen(func, node->lhs);
+    gen(func, node->rhs);
+    printf("    jmp .LforBegin%d\n",node->id);
+    printf(".LforEnd%d:\n",node->id);
+}
+
 // binary operation
 static void gen_bin(Node *node){
     printf("    pop rdi\n");
@@ -96,6 +108,8 @@ void gen(Function *func, Node *node){
         gen_if(func, node);
     else if (node->ty == ND_WHILE)
         gen_while(func, node);
+    else if (node->ty == ND_FOR)
+        gen_for(func, node);
     else if (node->ty == ND_RETURN){
         gen(func, node->lhs);
         printf("    pop rax\n");

@@ -84,7 +84,37 @@ static Node *cond(Function *func){
         return cond_node(func, ND_IF);
     else if (consume(TK_WHILE))
         return cond_node(func, ND_WHILE);
-    return stmt(func);
+    else if (consume(TK_FOR)){
+        int id = pos - 1; // token number of "if"
+        expect('(');
+        Token *t = current_token();
+        Node *init;
+        if (t->ty == ';')
+            init = (Node *)NULL;
+        else
+            init = assign(func);
+        expect(';');
+        Node *cond_n;
+        t = current_token();
+        if (t->ty == ';')
+            cond_n = new_node_term(ND_NUM,1,t->input);
+        else
+            cond_n = assign(func);
+        expect(';');
+        Node *next;
+        t = current_token();
+        if (t->ty == ')')
+            next = (Node *)NULL;
+        else
+            next = assign(func);
+        expect(')');
+        Node *loop = stmt(func);
+        Node *for_node = new_node(ND_FOR, loop, next);
+        for_node->cond = cond_n;
+        for_node->id=id;
+        return new_node(ND_NOP, init, for_node);
+    } else
+        return stmt(func);
 }
 
 static Node *stmt(Function *func){

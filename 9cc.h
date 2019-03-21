@@ -11,6 +11,7 @@ enum TK_NUM {
     TK_ELSE,        // else
     TK_WHILE,       // while
     TK_RETURN,      // return
+    TK_FOR,         // return
     TK_EQ,          // ==
     TK_EQN,         // !=
     TK_GE,          // >=
@@ -45,6 +46,7 @@ enum ND_NUM {
     ND_CALL,            // function call
     ND_IF,              // if
     ND_WHILE,           // while
+    ND_FOR,             // for
     ND_RETURN,          // return
     ND_EQ,              // ==
     ND_EQN,             // !=
@@ -58,7 +60,7 @@ typedef struct Node {
     int ty;             // type -- operator or ND_NUM
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
-    struct Node *cond;  // condition when ty is ND_IF
+    struct Node *cond;  // condition when ty is ND_IF, ND_WHILE, ND_FOR
     int val;            // used only when ty is ND_NUM
     char *name;         // used only when ty is ND_IDENT
     Vector *args;       // arguments for ND_CALL
