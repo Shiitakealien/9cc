@@ -31,6 +31,17 @@ static int consume(int ty){
     return 1;
 }
 
+static int expect(int ty){
+    if (consume(ty))
+        return 0;
+    else {
+        int exp = ((Token *)(tokens->data[pos]))->ty;
+        int res = ty;
+        fprintf(stderr,"token error, expect %d but got %d\n", exp, res);
+        exit(1);
+    }
+}
+
 static void add_ident(Map *map, char *name){
     if (map_get(map, name) == NULL)
         map_put(map, name, (void *)(map->keys->len));
@@ -54,9 +65,9 @@ static Node *cond(Function *func){
         return new_node(ND_RETURN, stmt(func), (Node *)NULL);
     else if (consume(TK_IF)){
         int id = pos - 1; // token number of "if"
-        (consume('('));
+        expect('(');
         Node *cond_node = assign(func);
-        consume(')');
+        expect(')');
         Node *if_node = new_node(ND_IF, cond(func), (Node *)NULL);
         if_node->cond=cond_node;
         if_node->id=id;
@@ -70,10 +81,7 @@ static Node *cond(Function *func){
 static Node *stmt(Function *func){
     Token *token = (Token *)(tokens->data[pos]);
     Node *node = assign(func);
-    if (!consume(';')){
-        fprintf(stderr,"token without ';': %s\n", token->input);
-        exit(1);
-    }
+    expect(';');
     return node;
 }   
 
@@ -170,9 +178,9 @@ Vector *program(){
             i = 0;
             func = add_func(funcs, token->input);
             pos++;
-            consume('(');
+            expect('(');
             for(;;){
-                if(consume(')'))
+                if(consume(')'))  // no arguments
                     break;
                 token = current_token();
                 add_ident(func->idents,token->input);
@@ -180,14 +188,14 @@ Vector *program(){
                 pos++;
                 consume(',');
             }
-            consume('{');
+            expect('{');
             token = current_token();
             while (token->ty != '}'){
                 func->code[i++] = cond(func);
                 token = current_token();
             }
             func->code[i] = NULL;
-            consume('}');
+            expect('}');
             token = current_token();
         }
     }
