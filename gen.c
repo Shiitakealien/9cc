@@ -6,7 +6,7 @@ static void gen_lval(Function *func, Node *node){
         exit(1);
     }
 
-    int offset = (int)map_get(func->idents, node->name) * 8;
+    int offset = (intptr_t)map_get(func->idents, node->name) * 8 + 8;
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", offset);
     printf("    push rax\n");
@@ -127,8 +127,9 @@ void gen(Function *func, Node *node){
         return;
     } else if (node->ty == ND_CALL){
         char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
-        for (int i = node->args->len-1; i >= 0; i--){
-            gen(func, (Node *)(node->args->data[i]));
+        int n = node->args->len-1;
+        for (int i = n; i >= 0; i--){
+            gen(func, (Node *)(node->args->data[n-i]));
             printf("    pop %s\n",reg[i]);
         }
         printf("    call %s\n", node->name);

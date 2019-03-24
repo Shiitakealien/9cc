@@ -1,5 +1,8 @@
 #include "9cc.h"
 
+static int pos = 0;
+static Vector *tokens;
+
 static Node *cond(Function *func);
 static Node *stmt(Function *func);
 static Node *assign(Function *func);
@@ -47,8 +50,8 @@ static int expect(int ty){
 }
 
 static void add_ident(Map *map, char *name){
-    if (map_get(map, name) == NULL)
-        map_put(map, name, (void *)(map->keys->len));
+    if (!map_exists(map, name))
+        map_put(map, name, (void *)(intptr_t)(map->keys->len));
 }
 
 static Function *add_func(Vector *funcs, char *name){
@@ -205,7 +208,6 @@ static Node *term(Function *func){
     
     if (consume(TK_IDENT)){
         if (!consume('(')){
-            add_ident(func->idents, t->input);
             return new_node_term(ND_IDENT,t->val,t->input);
         }
         else {
@@ -225,7 +227,8 @@ static Node *term(Function *func){
     exit(1);
 }
 
-Vector *program(){
+Vector *program(Vector *arg_tokens){
+    tokens = arg_tokens;
     int i;
     Token *t = current_token();
     Function *func;

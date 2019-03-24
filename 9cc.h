@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 
 // indicating the type of a token
 enum TK_NUM {
@@ -76,15 +77,13 @@ typedef struct {
     Map    *idents;     // local identifiers
 } Function;
 
-extern int pos; // indicates the position in all of tokens
-extern Vector *tokens;
-
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
+int map_exists(Map *map, char *key);
 Vector *tokenizer(char *p);
 void runtest();
-Vector *program();
+Vector *program(Vector *arg_tokens);
 void gen(Function *func, Node *node);

@@ -35,6 +35,13 @@ void *map_get(Map *map, char *key){
     return NULL;
 }
     
+int map_exists(Map *map, char *key) {
+    for (int i = 0; i < map->keys->len; i++)
+        if (!strcmp(map->keys->data[i], key))
+            return 1;
+    return 0;
+}
+
 static int expect(int line, int expected, int actual){
     if (expected == actual)
         return 1;
@@ -48,33 +55,31 @@ static void test_vector(){
     printf("test vector\n");
     Vector *vec = new_vector();
     expect(__LINE__, 0, vec->len);
-    int test[100];
-    for (int i = 0; i <100; i++){
-        test[i] = i;
-        vec_push(vec, (void *)&test[i]);
-    }
-
+  
+    for (int i = 0; i < 100; i++)
+        vec_push(vec, (void *)(intptr_t)i);
+  
     expect(__LINE__, 100, vec->len);
-    expect(__LINE__, 0,   *(int *)(vec->data[0]));
-    expect(__LINE__, 50,  *(int *)(vec->data[50]));
-    expect(__LINE__, 99,  *(int *)(vec->data[99]));
+    expect(__LINE__, 0,   (intptr_t)(vec->data[0]));
+    expect(__LINE__, 50,  (intptr_t)(vec->data[50]));
+    expect(__LINE__, 99,  (intptr_t)(vec->data[99]));
 
     printf("OK\n");
 }
 
 static void test_map() {
     printf("test map\n");
-    int test_data[] = {2,4,6};
     Map *map = new_map();
-
-    map_put(map, "foo", (void *)&test_data[0]);
-    expect(__LINE__, 2, *(int *)map_get(map, "foo"));
-
-    map_put(map, "bar", (void *)&test_data[1]);
-    expect(__LINE__, 4, *(int *)map_get(map, "bar"));
+    expect(__LINE__, 0, (intptr_t)map_get(map, "foo"));
     
-    map_put(map, "foo", (void *)&test_data[2]);
-    expect(__LINE__, 6, *(int *)map_get(map, "foo"));
+    map_put(map, "foo", (void *)(intptr_t)2);
+    expect(__LINE__, 2, (intptr_t)map_get(map, "foo"));
+    
+    map_put(map, "bar", (void *)(intptr_t)4);
+    expect(__LINE__, 4, (intptr_t)map_get(map, "bar"));
+    
+    map_put(map, "foo", (void *)(intptr_t)6);
+    expect(__LINE__, 6, (intptr_t)map_get(map, "foo"));
     
     printf("OK\n");
 }

@@ -1,8 +1,5 @@
 #include "9cc.h"
 
-int pos = 0;
-Vector *tokens;
-
 int main(int argc, char **argv){
     if (argc != 2){
         fprintf(stderr, "usage: ./9cc [code]\n");
@@ -13,14 +10,14 @@ int main(int argc, char **argv){
         runtest();
     else{
         // tokenize
-        tokens = tokenizer(argv[1]);
-        Vector *funcs = program();
+        Vector *tokens = tokenizer(argv[1]);
+        Vector *funcs = program(tokens);
 
         // write the header of assembly
         printf(".intel_syntax noprefix\n");
         printf(".global");
         for (int i = 0; i < funcs->len; i++)
-            printf(" %s,",((Function *)(funcs->data[i]))->name); // Maybe need to fix
+            printf(" %s,",((Function *)(funcs->data[i]))->name); 
         printf("\n");
         for (int i = 0; i < funcs->len; i++){
             Function *func = (Function *)(funcs->data[i]);
@@ -35,7 +32,7 @@ int main(int argc, char **argv){
             printf("    sub rsp, %d\n", heap);
             // copy every arg into the local variable
             char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
-            for (int i = func->args->len-1; i >= 0; i--){
+            for (int i = 0; i <= func->args->len-1; i++){
                 printf("    mov rax, rbp\n");
                 printf("    sub rax, %d\n",(func->args->len-i)*8);
                 printf("    mov [rax], %s\n",reg[i]);
@@ -44,7 +41,6 @@ int main(int argc, char **argv){
             // generate a code from the head
             for (int j = 0; func->code[j]; j++){
                 gen(func,func->code[j]);
-                printf("    pop rax\n");
             }
         }
     }
