@@ -93,4 +93,4 @@ int map_exists(Map *map, char *key);
 Vector *tokenizer(char *p);
 void runtest();
 Vector *program(Vector *arg_tokens);
-void gen(Function *func, Node *node);
+void gen(Vector *funcs);
