@@ -1,4 +1,5 @@
 #!/bin/bash
+err_cnt=0
 try(){
     expected="$1"
     input="$2"
@@ -12,6 +13,7 @@ try(){
         echo "OK : $input => $actual"
     else
         echo "NG : $input : $expected expected, but got $actual"
+        err_cnt=$((err_cnt+1))
     fi
 }
 try 0   "int main(){;;;return 0;}"
@@ -115,3 +117,4 @@ try 10  "int main(){int a;a=0;while(a!=10){a=a+1;}return a;}"
 try 10  "int main(){int a;a=0;while(a!=10){a=a+1;a=a-2;a=a+2;}return a;}"
 try 11  "int main(){int a;int b;a=3;b=1;for(a=0;a<=10;a=a+1)b=a;return a;}"
 try 11  "int main(){int a;int b;a=3;b=1;for(;a<=10;){b=a;a=a+1;}return a;}"
+echo "Error Count => $err_cnt"

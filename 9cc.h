@@ -77,6 +77,13 @@ typedef struct {
     Map    *idents;     // local identifiers
 } Function;
 
+// variable type
+typedef struct Var {
+    enum { INT, PTR } ty;
+    struct Var *ptrof;  // used when TY = PTR
+    int offset;          // 
+} Var;
+
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
 Map *new_map();

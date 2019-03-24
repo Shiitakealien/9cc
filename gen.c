@@ -6,7 +6,8 @@ static void gen_lval(Function *func, Node *node){
         exit(1);
     }
 
-    int offset = (intptr_t)map_get(func->idents, node->name) * 8 + 8;
+    Var *v = (Var *)(map_get(func->idents, node->name));
+    int offset = v->offset * 8 + 8;
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", offset);
     printf("    push rax\n");
