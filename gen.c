@@ -52,48 +52,50 @@ static void gen_for(Node *node){
     printf("    jmp .LforBegin%d\n",node->id);
     printf(".LforEnd%d:\n",node->id);
 }
+static void gen_call(Node *node){
+    char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
+    int n = node->args->len-1;
+    for (int i = n; i >= 0; i--){
+        gen_main((Node *)(node->args->data[n-i]));
+        printf("    pop %s\n",reg[i]);
+    }
+    printf("    call %s\n", node->name);
+    printf("    push rax\n");
+}
 
 // binary operation
-static void gen_bin(Node *node){
+static void gen_bin(Node *n){
     printf("    pop rdi\n");
     printf("    pop rax\n");
 
-    switch (node->ty){
+    char *ir;
+    switch (n->ty){
         case ND_EQ:
-            printf("    cmp rdi, rax\n");
-            printf("    sete al\n");
-            printf("    movzb rax, al\n");
-            break;
         case ND_EQN:
+            ir = n->ty == ND_EQN ? "setne" : "sete";
             printf("    cmp rdi, rax\n");
             printf("    setne al\n");
+            printf("    %s al\n", ir);
             printf("    movzb rax, al\n");
             break;
         case '>':
-            printf("    cmp rdi, rax\n");
-            printf("    setl al\n");
-            printf("    movzb rax, al\n");
-            break;
         case ND_GE:
+            ir = n->ty == '>' ? "setl" : "setle";
             printf("    cmp rdi, rax\n");
-            printf("    setle al\n");
+            printf("    %s al\n",ir);
             printf("    movzb rax, al\n");
             break;
         case '<':
-            printf("    cmp rax, rdi\n");
-            printf("    setl al\n");
-            printf("    movzb rax, al\n");
-            break;
         case ND_LE:
+            ir = n->ty == '<' ? "setl" : "setle";
             printf("    cmp rax, rdi\n");
-            printf("    setle al\n");
+            printf("    %s al\n",ir);
             printf("    movzb rax, al\n");
             break;
         case '+':
-            printf("    add rax, rdi\n");
-            break;
         case '-':
-            printf("    sub rax, rdi\n");
+            ir = n->ty == '+' ? "add" : "sub";
+            printf("    %s rax, rdi\n", ir);
             break;
         case '*':
             printf("    mul rdi\n");
@@ -105,7 +107,7 @@ static void gen_bin(Node *node){
     printf("    push rax\n");
 }
 
-void gen_main(Node *node){
+static void gen_main(Node *node){
     if (node == (Node *)NULL)
         return;
     else if (node->ty == ND_IF)
@@ -122,23 +124,13 @@ void gen_main(Node *node){
         printf("    ret\n");
     } else if (node->ty == ND_NUM){
         printf("    push %d\n", node->val);
-        return;
     } else if (node->ty == ND_IDENT){
         gen_lval(node);
         printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
-        return;
     } else if (node->ty == ND_CALL){
-        char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
-        int n = node->args->len-1;
-        for (int i = n; i >= 0; i--){
-            gen_main((Node *)(node->args->data[n-i]));
-            printf("    pop %s\n",reg[i]);
-        }
-        printf("    call %s\n", node->name);
-        printf("    push rax\n");
-        return;
+        gen_call(node);
     } else if (node->ty == '='){
         gen_lval(node->lhs);
         gen_main(node->rhs);
@@ -146,7 +138,6 @@ void gen_main(Node *node){
         printf("    pop rax\n");
         printf("    mov [rax], rdi\n");
         printf("    push rdi\n");
-        return;
     } else { // binary operation or nop Node
         gen_main(node->lhs);
         gen_main(node->rhs);
