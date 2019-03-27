@@ -145,7 +145,7 @@ static Node *stmt(Function *func){
         return new_node(ND_NOP, (Node *)NULL, (Node *)NULL);
     else if (consume('{')){
         while(!consume('}')) // generate node at every loop
-            node = new_node(ND_NOP, node, stmt(func));
+            node = new_node(ND_COMP, node, stmt(func));
         return node;
     } else {
         node = assign(func);

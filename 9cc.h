@@ -54,6 +54,7 @@ enum ND_NUM {
     ND_EQN,             // !=
     ND_GE,              // >=
     ND_LE,              // <=
+    ND_COMP,            // compound statements
     ND_NOP,             // NOP
 };
 

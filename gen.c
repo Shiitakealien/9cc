@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-static void gen_main(Node *node);
+static int gen_main(Node *node);
 static Function *f;
 
 static void gen_lval(Node *node){
@@ -107,9 +107,9 @@ static void gen_bin(Node *n){
     printf("    push rax\n");
 }
 
-static void gen_main(Node *node){
+static int gen_main(Node *node){
     if (node == (Node *)NULL)
-        return;
+        return 0;
     else if (node->ty == ND_IF)
         gen_if(node);
     else if (node->ty == ND_WHILE)
@@ -122,6 +122,7 @@ static void gen_main(Node *node){
         printf("    mov rsp, rbp\n");
         printf("    pop rbp\n");
         printf("    ret\n");
+        return 0;
     } else if (node->ty == ND_NUM){
         printf("    push %d\n", node->val);
     } else if (node->ty == ND_IDENT){
@@ -142,9 +143,14 @@ static void gen_main(Node *node){
         gen_main(node->lhs);
         gen_main(node->rhs);
         if (node->ty == ND_NOP)
-            return;
+            return 0;
+        if (node->ty == ND_COMP) {
+            printf("    pop rax\n");
+            return 0;
+        }
         gen_bin(node);
     }
+    return 1;
 }
 
 void gen(Vector *funcs){
