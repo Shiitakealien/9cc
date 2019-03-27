@@ -207,6 +207,12 @@ static Node *mul(Function *func){
 static Node *term(Function *func){
     Token *t = (Token *)(tokens->data[pos]);
 
+    if (consume('*'))
+        return new_node(ND_REF, term(func), (Node *)NULL);
+
+    if (consume('&'))
+        return new_node(ND_ADDR, term(func), (Node *)NULL);
+
     if (consume('(')){
         Node *node = add(func);
         if (!consume(')')){

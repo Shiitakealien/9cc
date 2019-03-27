@@ -50,6 +50,8 @@ enum ND_NUM {
     ND_WHILE,           // while
     ND_FOR,             // for
     ND_RETURN,          // return
+    ND_REF,             // * for pointers
+    ND_ADDR,            // & for pointers
     ND_EQ,              // ==
     ND_EQN,             // !=
     ND_GE,              // >=

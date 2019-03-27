@@ -47,7 +47,7 @@ Vector *tokenizer(char *p) {
             continue;
         }
 
-        if (strchr("+-*/(){}=;!,<>", *p)){
+        if (strchr("+-*/(){}=;!,<>&", *p)){
             if (*p == '=' && *(p+1) == '='){
                 add_token(vec, TK_EQ, p);
                 p+=2;
