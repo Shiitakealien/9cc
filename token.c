@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "icc.h"
 
 static Token *add_token(Vector *tokens, int ty, char *input){
     Token *token = malloc(sizeof(Token));

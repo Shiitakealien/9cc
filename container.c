@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "icc.h"
 
 Vector *new_vector(){
     Vector *vec = malloc(sizeof(Vector));

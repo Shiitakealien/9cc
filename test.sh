@@ -4,7 +4,7 @@ try(){
     expected="$1"
     input="$2"
 
-    ./9cc "$input" > tmp.s
+    ./icc "$input" > tmp.s
     gcc -o tmp tmp.s
     ./tmp
     actual="$?"
@@ -20,7 +20,7 @@ for x in test/*
 do
     a=`cat $x`
     echo "$a"
-    ./9cc "$a" > tmp.s
+    ./icc "$a" > tmp.s
     gcc -o tmp tmp.s
     ./tmp
     echo "$?"

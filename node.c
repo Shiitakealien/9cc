@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "icc.h"
 
 static int pos = 0;
 static Vector *tokens;

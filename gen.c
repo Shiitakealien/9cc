@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "icc.h"
 
 static int gen_main(Node *node);
 static Function *f;

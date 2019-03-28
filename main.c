@@ -1,8 +1,8 @@
-#include "9cc.h"
+#include "icc.h"
 
 int main(int argc, char **argv){
     if (argc != 2){
-        fprintf(stderr, "usage: ./9cc [code]\n");
+        fprintf(stderr, "usage: ./icc [code]\n");
         return 1;
     }
 

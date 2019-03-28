@@ -2,14 +2,14 @@ CFLAGS=-Wall -std=c11 -g
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
-9cc: $(OBJS)
-	$(CC) -o 9cc $(OBJS) $(LDFLAGS)
+icc: $(OBJS)
+	$(CC) -o icc $(OBJS) $(LDFLAGS)
 
-$(OBJS): 9cc.h
+$(OBJS): icc.h
 
-test: 9cc
-	./9cc -test
+test: icc
+	./icc -test
 	./test.sh
 
 clean:
-	rm -f 9cc *.o *~ tmp*
+	rm -f icc *.o *~ tmp*
