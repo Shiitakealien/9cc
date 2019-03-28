@@ -16,6 +16,15 @@ try(){
         err_cnt=$((err_cnt+1))
     fi
 }
+for x in test/*
+do
+    a=`cat $x`
+    echo "$a"
+    ./9cc "$a" > tmp.s
+    gcc -o tmp tmp.s
+    ./tmp
+    echo "$?"
+done
 try 0   "int main(){;;;return 0;}"
 try 0   "int main(){return 0;}"
 try 42  "int main(){return 42;}"
