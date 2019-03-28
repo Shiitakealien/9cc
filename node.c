@@ -2,14 +2,15 @@
 
 static int pos = 0;
 static Vector *tokens;
+static Function *func;
 
-static Node *cond(Function *func);
-static Node *stmt(Function *func);
-static Node *assign(Function *func);
-static Node *eq(Function *func);
-static Node *add(Function *func);
-static Node *mul(Function *func);
-static Node *term(Function *func);
+static Node *cond();
+static Node *stmt();
+static Node *assign();
+static Node *eq();
+static Node *add();
+static Node *mul();
+static Node *term();
 
 static Token *crnt_tkn(){
     return (Token *)(tokens->data[pos]);
@@ -80,20 +81,20 @@ static Function *add_func(Vector *funcs, char *name){
     return func;
 }
 
-static Node *cond_node(Function *func, int ty){
+static Node *cond_node(int ty){
     int id = pos - 1; // token number of "if"
     expect('(');
-    Node *cond_n = assign(func);
+    Node *cond_n = assign();
     expect(')');
-    Node *node = new_node(ty, cond(func), (Node *)NULL);
+    Node *node = new_node(ty, cond(), (Node *)NULL);
     node->cond=cond_n;
     node->id=id;
     if (consume(TK_ELSE) && ty == TK_IF)
-        node->rhs = cond(func);
+        node->rhs = cond();
     return node;
 }
 
-static Node *cond(Function *func){
+static Node *cond(){
     int ptr_depth;
     if (consume(TK_INT)){
         ptr_depth = 0;
@@ -104,11 +105,11 @@ static Node *cond(Function *func){
         expect(';');
         return new_node(ND_NOP, (Node *)NULL, (Node *)NULL);
     } else if (consume(TK_RETURN))
-        return new_node(ND_RETURN, stmt(func), (Node *)NULL);
+        return new_node(ND_RETURN, stmt(), (Node *)NULL);
     else if (consume(TK_IF))
-        return cond_node(func, ND_IF);
+        return cond_node(ND_IF);
     else if (consume(TK_WHILE))
-        return cond_node(func, ND_WHILE);
+        return cond_node(ND_WHILE);
     else if (consume(TK_FOR)){
         int id = pos - 1; // token number of "if"
         expect('(');
@@ -116,105 +117,105 @@ static Node *cond(Function *func){
         if (crnt_tkn()->ty == ';')
             init = (Node *)NULL;
         else
-            init = assign(func);
+            init = assign();
         expect(';');
         Node *cond_n;
         if (crnt_tkn()->ty == ';')
             cond_n = new_node_term(ND_NUM,1,crnt_tkn()->input);
         else
-            cond_n = assign(func);
+            cond_n = assign();
         expect(';');
         Node *next;
         if (crnt_tkn()->ty == ')')
             next = (Node *)NULL;
         else
-            next = assign(func);
+            next = assign();
         expect(')');
-        Node *loop = stmt(func);
+        Node *loop = stmt();
         Node *for_node = new_node(ND_FOR, loop, next);
         for_node->cond = cond_n;
         for_node->id=id;
         return new_node(ND_NOP, init, for_node);
     } else
-        return stmt(func);
+        return stmt();
 }
 
-static Node *stmt(Function *func){
+static Node *stmt(){
     Node *node = (Node *)NULL;
     if (consume(';'))
         return new_node(ND_NOP, (Node *)NULL, (Node *)NULL);
     else if (consume('{')){
         while(!consume('}')) // generate node at every loop
-            node = new_node(ND_COMP, node, stmt(func));
+            node = new_node(ND_COMP, node, stmt());
         return node;
     } else {
-        node = assign(func);
+        node = assign();
         expect(';');
         return node;
     }
 }   
 
-static Node *assign(Function *func){
-    Node *node = eq(func);
+static Node *assign(){
+    Node *node = eq();
     for (;;)
         if (consume('='))
-            node = new_node('=', node, assign(func));
+            node = new_node('=', node, assign());
         else
             return node;
 }
 
-static Node *eq(Function *func){
-    Node *node = add(func);
+static Node *eq(){
+    Node *node = add();
     for (;;)
         if (consume(TK_EQ))
-            node = new_node(ND_EQ, node, add(func));
+            node = new_node(ND_EQ, node, add());
         else if (consume(TK_EQN))
-            node = new_node(ND_EQN, node, add(func));
+            node = new_node(ND_EQN, node, add());
         else if (consume('>'))
-            node = new_node('>', node, add(func));
+            node = new_node('>', node, add());
         else if (consume(TK_GE))
-            node = new_node(ND_GE, node, add(func));
+            node = new_node(ND_GE, node, add());
         else if (consume('<'))
-            node = new_node('<', node, add(func));
+            node = new_node('<', node, add());
         else if (consume(TK_LE))
-            node = new_node(ND_LE, node, add(func));
+            node = new_node(ND_LE, node, add());
         else
             return node;
 }
 
-static Node *add(Function *func){
-    Node *node = mul(func);
+static Node *add(){
+    Node *node = mul();
     for (;;)
         if (consume('+'))
-            node = new_node('+', node, mul(func));
+            node = new_node('+', node, mul());
         else if (consume('-'))
-            node = new_node('-', node, mul(func));
+            node = new_node('-', node, mul());
         else
             return node;
 }
 
-static Node *mul(Function *func){
-    Node *node = term(func);
+static Node *mul(){
+    Node *node = term();
     for (;;)
         if (consume('*'))
-            node = new_node('*', node, term(func));
+            node = new_node('*', node, term());
         else if (consume('/'))
-            node = new_node('/', node, term(func));
+            node = new_node('/', node, term());
         else
             return node;
 }
     
-static Node *term(Function *func){
+static Node *term(){
     Token *t = (Token *)(tokens->data[pos]);
 
     if (consume('*'))
-        return new_node(ND_REF, term(func), (Node *)NULL);
+        return new_node(ND_REF, term(), (Node *)NULL);
 
     if (consume('&'))
-        return new_node(ND_ADDR, term(func), (Node *)NULL);
+        return new_node(ND_ADDR, term(), (Node *)NULL);
 
     if (consume('(')){
-        Node *node = add(func);
+        Node *node = add();
         if (!consume(')')){
             fprintf(stderr,"'(' without ')': %s", 
                     t->input);
@@ -235,7 +236,7 @@ static Node *term(Function *func){
             node->args = new_vector();
             if (!consume(')')) { // get arguments
                 do{
-                     vec_push(node->args, (void *)assign(func));
+                     vec_push(node->args, (void *)assign());
                 }while(consume(','));
                 consume(')');
             }
@@ -250,12 +251,11 @@ static Node *term(Function *func){
 Vector *program(Vector *arg_tokens){
     tokens = arg_tokens;
     int code_num, ptr_depth;
-    Function *f;
     Vector *funcs = new_vector();
     while (crnt_tkn()->ty != TK_EOF){
         if (consume(TK_INT)){
             code_num = 0;
-            f = add_func(funcs, crnt_tkn()->input);
+            func = add_func(funcs, crnt_tkn()->input);
             expect(TK_IDENT);
             expect('(');
             for(;;){
@@ -265,15 +265,15 @@ Vector *program(Vector *arg_tokens){
                 ptr_depth = 0;
                 while(consume('*'))
                     ptr_depth++;
-                add_ident(f->idents,crnt_tkn()->input,ptr_depth);
-                vec_push(f->args,(void *)crnt_tkn()->input);
+                add_ident(func->idents,crnt_tkn()->input,ptr_depth);
+                vec_push(func->args,(void *)crnt_tkn()->input);
                 pos++;
                 consume(',');
             }
             expect('{');
             while (crnt_tkn()->ty != '}')
-                f->code[code_num++] = cond(f);
-            f->code[code_num] = NULL;
+                func->code[code_num++] = cond(func);
+            func->code[code_num] = NULL;
             expect('}');
         }
     }
