@@ -5,7 +5,7 @@ try(){
     input="$2"
 
     ./icc "$input" > tmp.s
-    gcc -o tmp tmp.s
+    gcc -o tmp tmp.s tmp-test.o
     ./tmp
     actual="$?"
 
@@ -16,6 +16,26 @@ try(){
         err_cnt=$((err_cnt+1))
     fi
 }
+
+cat <<EOF | gcc -xc -c -o tmp-test.o -
+int *alloc4(int x0,int x1,int x2,int x3) {
+  static int arr[4];
+  arr[0] = x0;
+  arr[1] = x1;
+  arr[2] = x2;
+  arr[3] = x3;
+  return arr;
+}
+int *alloc4a(int x0,int x1,int x2,int x3) {
+  static int arr[4];
+  arr[0] = x0;
+  arr[1] = x1;
+  arr[2] = x2;
+  arr[3] = x3;
+  return arr+3;
+}
+EOF
+
 for x in test/*
 do
     a=`cat $x`
@@ -25,6 +45,7 @@ do
     ./tmp
     echo "$?"
 done
+
 try 0   "int main(){;;;return 0;}"
 try 0   "int main(){return 0;}"
 try 42  "int main(){return 42;}"
@@ -102,10 +123,12 @@ try 1   "int foo3(int x,int y){return x;}int main(){return foo3(1,1+4);}"
 try 5   "int foo3(int x,int y){return y;}int main(){return foo3(1,1+4);}"
 try 5   "int foo3(int x,int y){return x;}int main(){return foo3(1+4,4);}"
 try 4   "int foo3(int x,int y){return y;}int main(){return foo3(1+4,4);}"
+try 4   "int foo3(int x,int y){return y;}int main(){int a;a=foo3(1+4,4);return a;}"
 try 3   "int f(int n1,int n0){return n1+n0;}int main(){return f(f(1,1),1);}"
 try 1   "int a(){return 1;}int main(){return a();}"
 try 2   "int a(){return 2;}int main(){return a();}"
 try 10  "int a(){return 2;}int b(){return 3;}int main(){int c;c=a()+b();return 2*c;}"
+try 7   "int a(){return 2;}int b(){return 3;}int main(){int c;c=a()+b();return (2+c);}"
 try 5   "int a(int x,int y){return x+y;}int main(){return a(2,3);}"
 try 6   "int a(int x,int y){return x*y;}int main(){return a(2,3);}"
 try 3   "int a(int x,int y){return y;}int main(){return a(2,3);}"
@@ -130,4 +153,13 @@ try 13  "int main(){int *a;int b;a=&b;b=13;return *a;}"
 try 13  "int main(){int *a;int b;a=&b;*a=13;return b;}"
 try 15  "int main(){int **a;int *b;int c;a=&b;b=&c;c=15;return **a;}"
 try 19  "int main(){int **a;int *b;int c;a=&b;*a=&c;c=19;return *b;}"
+try 1   "int main(){int *a;a=alloc4(1,2,3,4); return *a;}"
+try 1   "int main(){int *a;a=alloc4(1,2,3,4);  a=a+0;return *a;}"
+try 2   "int main(){int *a;a=alloc4(1,2,3,4);  a=a+1;return *a;}"
+try 3   "int main(){int *a;a=alloc4(1,2,3,4);  a=a+2;return *a;}"
+try 4   "int main(){int *a;a=alloc4(1,2,3,4);  a=a+3;return *a;}"
+try 4   "int main(){int *a;a=alloc4a(1,2,3,4); a=a-0;return *a;}"
+try 3   "int main(){int *a;a=alloc4a(1,2,3,4); a=a-1;return *a;}"
+try 2   "int main(){int *a;a=alloc4a(1,2,3,4); a=a-2;return *a;}"
+try 1   "int main(){int *a;a=alloc4a(1,2,3,4); a=a-3;return *a;}"
 echo "Error Count => $err_cnt"

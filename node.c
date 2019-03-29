@@ -44,7 +44,7 @@ static Node *new_node(int ty, Node *lhs, Node *rhs){
             node->eval = lhs->eval;
         } else if (rhs->eval->ty == PTR) {
             node->eval = rhs->eval;
-        } else  { // lhs and rhs are INT
+        } else  { // both of lhs and rhs are INT
             node->eval = rhs->eval;
         }
     } else if (ty==ND_EQ || ty==ND_EQN || ty=='>' || 

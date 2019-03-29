@@ -5,7 +5,7 @@ static Function *f;
 
 static void gen_lval(Node *node){
     if (node->ty != ND_IDENT && node->ty != ND_REF ) {
-        fprintf(stderr, "lhs is not a variable");
+        fprintf(stderr, "lhs is not a variable\n");
         exit(1);
     }
     Node *n = node->ty == ND_IDENT ? node : node->lhs;
@@ -57,7 +57,7 @@ static void gen_call(Node *node){
     char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
     int n = node->args->len-1;
     for (int i = n; i >= 0; i--){
-        gen_main((Node *)(node->args->data[n-i]));
+        gen_main((Node *)(node->args->data[i]));
         printf("    pop %s\n",reg[i]);
     }
     printf("    call %s\n", node->name);
@@ -66,8 +66,21 @@ static void gen_call(Node *node){
 
 // binary operation
 static void gen_bin(Node *n){
-    printf("    pop rdi\n");
-    printf("    pop rax\n");
+    Node *n_ptr;
+    // swap if necessary, for PTR + INT
+    // operation
+    if ((n->ty == '+' || n->ty == '-') && 
+            (n->lhs->eval->ty == PTR)) {
+        gen_main(n->rhs);
+        gen_main(n->lhs);
+        n_ptr = n->lhs;
+    } else {
+        gen_main(n->lhs);
+        gen_main(n->rhs);
+        n_ptr = n->rhs;
+    }
+        printf("    pop rdi\n");
+        printf("    pop rax\n");
 
     char *ir;
     switch (n->ty){
@@ -96,7 +109,21 @@ static void gen_bin(Node *n){
         case '+':
         case '-':
             ir = n->ty == '+' ? "add" : "sub";
-            printf("    %s rax, rdi\n", ir);
+            int size = 1;
+            if (n_ptr->eval->ty == PTR) {
+                if (n_ptr->eval->ptrof->ty == PTR)
+                    size = 8;   // PTR to PTR
+                else if (n_ptr->eval->ptrof->ty == INT)
+                    size = 4;   // PTR to INT
+                printf("    mov rsi, %d\n", size);
+                printf("    mul rsi\n");
+                if (n->lhs->eval->ty == PTR) {
+                    printf("    %s rdi, rax\n", ir);
+                    printf("    mov rax, rdi\n");
+                } else
+                    printf("    %s rax, rdi\n", ir);
+            } else
+                printf("    %s rax, rdi\n", ir);
             break;
         case '*':
             printf("    mul rdi\n");
@@ -153,15 +180,16 @@ static int gen_main(Node *node){
         printf("    pop rax\n");
         printf("    mov [rax], rdi\n");
         printf("    push rdi\n");
-    } else { // binary operation or nop Node
+    } else if (node->ty == ND_NOP) {
         gen_main(node->lhs);
         gen_main(node->rhs);
-        if (node->ty == ND_NOP)
-            return 0;
-        if (node->ty == ND_COMP) {
-            printf("    pop rax\n");
-            return 0;
-        }
+        return 0;
+    } else if (node->ty == ND_COMP) {
+        gen_main(node->lhs);
+        gen_main(node->rhs);
+        printf("    pop rax\n");
+        return 0;
+    } else { // binary operation or nop Node
         gen_bin(node);
     }
     return 1;
@@ -192,10 +220,11 @@ void gen(Vector *funcs){
         printf("    sub rsp, %d\n", var_space(f));
         // copy every arg into the local variable
         char * reg[] = {"rdi","rsi","rdx","rcx","r8","r9"};
-        for (int i = 0; i <= f->args->len-1; i++){
+        int n = f->args->len-1;
+        for (int i = 0; i <= n; i++){
             printf("    mov rax, rbp\n");
             printf("    sub rax, %d\n",(f->args->len-i)*8);
-            printf("    mov [rax], %s\n",reg[i]);
+            printf("    mov [rax], %s\n",reg[n-i]);
         }
         // generate a code from the head
         for (int j = 0; f->code[j]; j++){

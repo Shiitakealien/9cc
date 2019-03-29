@@ -85,7 +85,7 @@ typedef struct {
 typedef struct Var {
     enum { INT, PTR } ty;
     struct Var *ptrof;  // used when TY = PTR
-    int offset;          // 
+    int offset;         // relative addr for RBP
 } Var;
 
 Vector *new_vector();
