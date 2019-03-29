@@ -63,6 +63,7 @@ enum ND_NUM {
 // Node Type
 typedef struct Node {
     int ty;             // type -- operator or ND_NUM
+    struct Var *eval;   // evaluation of Node
     struct Node *lhs;   // left-hand side
     struct Node *rhs;   // right-hand side
     struct Node *cond;  // condition when ty is ND_IF, ND_WHILE, ND_FOR

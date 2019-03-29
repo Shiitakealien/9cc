@@ -21,6 +21,36 @@ static Node *new_node(int ty, Node *lhs, Node *rhs){
     node->ty = ty;
     node->lhs = lhs;
     node->rhs = rhs;
+    if (ty==ND_REF) {
+        node->eval = lhs->eval->ptrof;
+    } else if (ty==ND_ADDR) {
+        Var *v = malloc(sizeof(Var));
+        v->ty    = PTR;  // is this right?
+        v->ptrof = lhs->eval;
+        node->eval = v;
+    } else if (ty=='*' || ty=='/') {
+        if (lhs->eval->ty == PTR || rhs->eval->ty == PTR) {
+            fprintf(stderr,"This operation is not allowed\n");
+            exit(1);
+        }
+        Var *v = malloc(sizeof(Var));
+        v->ty    = INT;
+        node->eval = v;
+    } else if (ty=='+' || ty=='-') {
+        if (lhs->eval->ty == PTR && rhs->eval->ty == PTR) {
+            fprintf(stderr,"PTR %c PTR is not allowed\n", ty);
+            exit(1);
+        } else if (lhs->eval->ty == PTR) {
+            node->eval = lhs->eval;
+        } else if (rhs->eval->ty == PTR) {
+            node->eval = rhs->eval;
+        } else  { // lhs and rhs are INT
+            node->eval = rhs->eval;
+        }
+    } else if (ty==ND_EQ || ty==ND_EQN || ty=='>' || 
+               ty==ND_GE || ty=='<'    || ty==ND_LE || ty=='=') {
+        ; // will be added comparing the evaluation
+    } 
     return node;
 }
 
@@ -29,6 +59,13 @@ static Node *new_node_term(int ty, int val, char *input){
     node->ty = ty;
     node->val = val;
     node->name = input;
+    if (ty==ND_NUM || ty==ND_CALL) {
+        Var *v = malloc(sizeof(Var));
+        v->ty = INT;
+        node->eval = v;
+    } else if (ty==ND_IDENT) {
+        node->eval = (Var *)(map_get(func->idents, input));
+    }
     return node;
 }
 
