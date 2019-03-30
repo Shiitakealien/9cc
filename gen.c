@@ -4,10 +4,6 @@ static int gen_main(Node *node);
 static Function *f;
 
 static void gen_lval(Node *node){
-    if (node->ty != ND_IDENT && node->ty != ND_REF ) {
-        fprintf(stderr, "lhs is not a variable\n");
-        exit(1);
-    }
     Node *n = node->ty == ND_IDENT ? node : node->lhs;
     Var *v = (Var *)(map_get(f->idents, n->name));
     int offset = v->offset * 8 + 8;
@@ -148,10 +144,13 @@ static int gen_main(Node *node){
         gen_for(node);
         return 0;
     } else if (node->ty == ND_REF){
-        gen_lval(node->lhs);
-        printf("    pop rax\n");
-        printf("    mov rax, [rax]\n");
-        printf("    push rax\n");
+        if (node->lhs->ty == ND_IDENT) {
+            gen_lval(node->lhs);
+            printf("    pop rax\n");
+            printf("    mov rax, [rax]\n");
+            printf("    push rax\n");
+        } else
+            gen_main(node->lhs);
         printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");

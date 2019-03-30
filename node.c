@@ -246,10 +246,10 @@ static Node *term(){
     Token *t = (Token *)(tokens->data[pos]);
 
     if (consume('*'))
-        return new_node(ND_REF, term(), (Node *)NULL);
+        return new_node(ND_REF, add(), (Node *)NULL);
 
     if (consume('&'))
-        return new_node(ND_ADDR, term(), (Node *)NULL);
+        return new_node(ND_ADDR, add(), (Node *)NULL);
 
     if (consume('(')){
         Node *node = add();
