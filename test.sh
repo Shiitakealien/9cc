@@ -36,7 +36,7 @@ int *alloc4a(int x0,int x1,int x2,int x3) {
 }
 EOF
 
-for x in test/*
+for x in ex/*.c
 do
     a=`cat $x`
     echo "$a"

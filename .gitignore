@@ -1,4 +1,6 @@
  *~
 *.o
 tmp*
-9cc
+icc
+ex/*
+!ex/*.c
