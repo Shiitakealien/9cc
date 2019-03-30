@@ -6,7 +6,7 @@ static Function *f;
 static void gen_lval(Node *node){
     Node *n = node->ty == ND_IDENT ? node : node->lhs;
     Var *v = (Var *)(map_get(f->idents, n->name));
-    int offset = v->offset * 8 + 8;
+    int offset = v->offset; 
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", offset);
     printf("    push %s\n", 
@@ -195,10 +195,9 @@ static int gen_main(Node *node){
 }
 
 static int var_space(Function *f) {
-    int var_num = f->idents->keys->len;
-    int pad = 16-((var_num*8)%16);
+    int pad = 16-((f->var_sum)%16);
     pad = pad == 16 ? 0 : pad;
-    int size = pad+var_num*8;
+    int size = pad+f->var_sum;
     return size;
 }
 

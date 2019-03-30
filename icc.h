@@ -79,6 +79,7 @@ typedef struct {
     Vector *args;       // will be used
     Node   *code[100];  // Nodes constructing definition of a function
     Map    *idents;     // local identifiers
+    int    var_sum;     // sum of local variable memory space
 } Function;
 
 // variable type

@@ -104,7 +104,10 @@ static void add_ident(Map *map, char *name, int ptr_depth){
             v[i]->ty = PTR;
             v[i]->ptrof=v[i+1];
         }
-        v[0]->offset = map->keys->len;
+        // define the size of every variable
+        int size = ptr_depth == 0 ? 8 : 8;
+        func->var_sum += size;
+        v[0]->offset = func->var_sum;
         map_put(map, name, (void *)v[0]);
     }
 }
@@ -293,6 +296,7 @@ Vector *program(Vector *arg_tokens){
         if (consume(TK_INT)){
             code_num = 0;
             func = add_func(funcs, crnt_tkn()->input);
+            func->var_sum = 0;
             expect(TK_IDENT);
             expect('(');
             for(;;){
